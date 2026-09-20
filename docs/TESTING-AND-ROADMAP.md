@@ -49,13 +49,10 @@ Appearance and access
 - [ ] Keyboard: Tab reaches every button, focus ring visible, Enter/Space works.
 - [ ] `prefers-reduced-motion` on: no shake animation.
 - [ ] Phone width around 360 px: equation with 4 terms wraps cleanly; no horizontal page scroll.
-- [ ] Play through several equations in a row: the first +/− button stays in the same spot each time (below
-  640 px width the row is left-anchored, not centered, so it doesn't jump left/right just because a different
-  equation has more or longer terms).
-- [ ] At 640 px width and up, the equation row spreads across the full card width (`justify-content:
-  space-between`) instead of clustering on the left. Below 640 px it's left-anchored instead, so a wrapped
-  equation's second line never strands a lone `+`/term pair stretched to the far edges — checked with the
-  widest 5-term equations (`Li₂CO₃ + 2HCl → 2LiCl + H₂O + CO₂`-style) up to 760 px: they stay on one line.
+- [ ] The equation row is centered in its card, sized to its own content (not stretched to fill the card).
+  Different equations will naturally center at different horizontal positions since they have different
+  numbers/lengths of terms — that's expected. On a wrapped mobile line, a stranded `+`/term pair centers as a
+  unit instead of stretching to the far edges.
 - [ ] Compare a term with no subscript (e.g. `Na`, `Al`) next to one with a subscript (e.g. `O₂`) in the same
   equation: their letters sit on the same line, and the `+` / `→` between terms lines up with those letters
   too — not higher or lower.
