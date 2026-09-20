@@ -52,6 +52,9 @@ Appearance and access
 - [ ] Play through several equations in a row: the first +/− button stays in the same spot each time (the row
   is left-anchored, not centered, so it doesn't jump left/right just because a different equation has more or
   longer terms).
+- [ ] Compare a term with no subscript (e.g. `Na`, `Al`) next to one with a subscript (e.g. `O₂`) in the same
+  equation: their letters sit on the same line, and the `+` / `→` between terms lines up with those letters
+  too — not higher or lower.
 - [ ] Material Icons glyphs render (not raw names like "check_circle") on every button, `h2`, message and badge,
   in both light and dark mode.
 
