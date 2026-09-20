@@ -68,7 +68,7 @@ with a neighbouring substance. "My choice" = fits the topics but I found no matc
 - Organic chemistry (CH₄, C₃H₈): removed in an earlier version.
 - Redox balancing, ions, charges, half-reactions.
 - H₂SO₄, HNO₃ as reactants, other salts, other metals except Al and Ca in a few fixed reactions.
-- Fe + Cl₂ → FeCl₃ (was in the first 3D version; dropped to keep the focus on alkali metals and halogens).
+- Fe + Cl₂ → FeCl₃ (was in an earlier version; dropped to keep the focus on alkali metals and halogens).
 
 ## Sources used
 

@@ -68,36 +68,40 @@ Globals: `let EQS, idx, coefs, score, mistakes, hints, solved, wrong, currentSee
 ## Flow
 
 ```
-startGame → generateSet → loadEq → render (→ renderCounter, renderLegend, update3D)
+startGame → generateSet → loadEq (scrolls to top) → render (→ renderCounter)
    +/- click → coefs change → render
    Провери → check():
         not balanced        → mistakes++, message, shake
         balanced, not gcd 1 → warning, no penalty
         balanced + simplest → solved, score += max(0, 100 - 25*hints - 10*mistakes), show note
-   Подсказка → hint(): set first wrong coefficient to the correct value, hints++
+   Подсказка → hint(): set first wrong coefficient to the correct value, hints++;
+                        if every coefficient is already correct (e.g. a template whose sol is all 1s),
+                        show an "already correct" message instead of doing nothing
    Напред → next() → loadEq or finish()
 ```
 
 `totals()` sums atoms per element on each side (`coefficient × parse(formula)`).
 `isBalanced()` compares all elements. `isSimplest()` checks `gcd(coefs) === 1`.
-The header pill shows `Точки: score (+potential)`. The potential drops with each mistake or hint but is only added
-to `score` when the equation is solved.
+The header pill (`#scoreVal` + `#potBadge`) shows the running score plus the current equation's potential as a
+separate badge; the badge hides once the equation is `solved`. The potential drops with each mistake or hint but
+is only added to `score` when the equation is solved.
 
 ## Rendering
 
 `render()` rebuilds the equation row (buttons + formulas), then `renderCounter()` (atom-count rows, each with a
-colour chip, a proportional bar per side and a ✓/✗ badge), then `renderLegend()` (colour chip + symbol + Bulgarian
-name for every element in the current equation, shown under the 3D panes), then `update3D()`. It re-creates DOM on
-every click; that is fine at this size.
+colour chip, a proportional bar per side and a ✓/✗ badge). It re-creates DOM on every click; that is fine at
+this size.
 
 ## Theming and accessibility
 
 CSS custom properties on `:root`, dark variants under `prefers-color-scheme: dark` and `[data-theme]`.
-Element colours live in JS (`COLORS`) because three.js needs them; the counter table chips and the 3D legend reuse
-them. `EL_NAME` holds the Bulgarian display name per element, used only by the legend.
+Element colours live in JS (`COLORS`); the counter table's chip reuses them.
+Icons are the self-hosted Material Icons webfont (`.material-icons` ligature spans), always paired with a
+Bulgarian text label.
 Buttons have `aria-label`s, focus outlines are visible, motion respects `prefers-reduced-motion`.
 
 ## Validation
 
-`tools/validate.js` extracts the data and shapes sections of the script, evaluates them in a Node VM (no DOM, no
-THREE), and checks every template × every allowed substitution. See `docs/TESTING-AND-ROADMAP.md`.
+`tools/validate.js` extracts the data section of the script (everything above the `/* ---------- състояние`
+marker), evaluates it in a Node VM (no DOM), and checks every template × every allowed substitution. See
+`docs/TESTING-AND-ROADMAP.md`.

@@ -8,54 +8,43 @@ node tools/validate.js
 
 Checks:
 - script syntax;
-- every template × every allowed metal/halogen combination (165 concrete equations): balances with the stored
+- every template × every allowed metal/halogen combination (168 concrete equations): balances with the stored
   coefficients, smallest whole numbers, note text contains no `undefined` or leftover `{}`;
-- every formula has a 3D shape; atoms in the shape match the formula; bond counts satisfy valence; every element
-  has a colour and radius;
+- every element used in a formula has a colour (for the atom-count table's chip);
 - `generateSet()` for 500 seeds: 12 equations, 4 per level, no duplicate equations, same seed gives same result.
 
-Exit code 0 = OK. Run it after every change to `TEMPLATES`, `SHAPES`, `COLORS`, `RAD` or the generator.
+Exit code 0 = OK. Run it after every change to `TEMPLATES`, `COLORS` or the generator.
 If a template becomes invalid for some element, the output names the template and the element combination.
 
 ## Manual checklist (needs a real browser)
 
-**This has not been done yet. The 3D part was written without being able to open a browser.** Do it first.
-
 Load
 - [ ] Open `index.html` by double-click (`file://`). Start screen appears, no red errors in the console.
-- [ ] Press *Започни*: two 3D panels show coloured molecules that slowly rotate.
-- [ ] Rename `vendor/` temporarily: page still loads three.js from the CDN (needs internet). Rename it back.
-- [ ] Block WebGL (or delete `vendor/` and go offline): the 3D card disappears, the game still works.
 - [ ] Rename `vendor/MaterialIcons.woff2` temporarily: buttons and headings still work but show the raw icon
   name (e.g. "play_arrow Започни") instead of a glyph — ugly, not broken. Rename it back.
 
 Gameplay
-- [ ] Open `index.html?seed=42`. First equation is `4Na + O₂ → 2Na₂O`. Press + on Na twice → the left panel shows 3 Na atoms.
-- [ ] Reach 4, 1, 2: both panel frames go green, table all green.
+- [ ] Open `index.html?seed=42`. First equation is `4Na + O₂ → 2Na₂O`. Press + on Na twice → the coefficient
+  shows 3 and the Na row updates.
+- [ ] Reach 4, 1, 2: table all green.
 - [ ] Open `index.html?seed=42` again: same 12 equations. Play again from the end screen: different equations, seed shown.
 - [ ] Open the page twice without a seed: different sets.
 - [ ] *Провери* with wrong coefficients: red message, shake, potential points drop by 10.
 - [ ] Set 4, 2, 4 for H₂ + O₂ → H₂O: message says balanced but not smallest numbers, no penalty.
 - [ ] *Подсказка*: fixes one coefficient, potential drops by 25.
 - [ ] Correct answer: green message, science note, +points, buttons locked, *Напред* appears.
-- [ ] An equation whose solution is already 1/1/1 (e.g. `M₂O + CO₂ → M₂CO₃`, `MOH + HX → MX + H₂O`): loads already
-  green (table and both 3D frames), *Провери* immediately scores full points, *Подсказка* shows an "already
-  correct" message instead of doing nothing.
+- [ ] An equation whose solution is already 1/1/1 (e.g. `M₂O + CO₂ → M₂CO₃`, `MOH + HX → MX + H₂O`): loads
+  already green, *Провери* immediately scores full points, *Подсказка* shows an "already correct" message
+  instead of doing nothing.
+- [ ] Scroll down before pressing *Напред* (or after the last equation): the next equation, or the end screen,
+  loads scrolled to the top.
 - [ ] Play all 12 equations of a few different seeds. Check especially: 2HgO, Al₂O₃, P₂O₅, Ca(OH)₂, carbonates (M₂CO₃, MHCO₃), AgNO₃, HClO / MClO.
-- [ ] End screen: score, list of equations with mistakes or hints, *Играй отново* resets everything.
-
-3D
-- [ ] Drag with the mouse rotates both axes; on a phone, horizontal drag rotates and vertical drag scrolls the page.
-- [ ] Set large coefficients (e.g. 6 HCl + 2 Al): everything stays inside the canvas, nothing clipped.
-- [ ] Resize the window and rotate the phone: layout reflows, molecules stay in view.
-- [ ] No molecule looks broken (bonds attached, no overlapping spheres). Pay attention to the largest atoms: CsI, Cs₂CO₃, RbBr, and to Al₂O₃, P₂O₅, AgNO₃.
-- [ ] Atom colours in one equation are distinguishable (e.g. Cs teal vs C grey in Cs₂CO₃, Br brown vs Cs teal in CsBr).
-- [ ] Console has no WebGL context-loss warnings after playing for a few minutes.
+- [ ] End screen: score, grade icon and progress bar, list of equations with mistakes or hints, *Играй отново* resets everything.
 
 Appearance and access
-- [ ] Dark mode (system setting): text readable, panes visible, atom colours distinguishable.
+- [ ] Dark mode (system setting): text readable, cards visible, atom colours distinguishable.
 - [ ] Keyboard: Tab reaches every button, focus ring visible, Enter/Space works.
-- [ ] `prefers-reduced-motion` on: no auto-rotation or bobbing, no shake.
+- [ ] `prefers-reduced-motion` on: no shake animation.
 - [ ] Phone width around 360 px: equation with 4 terms wraps cleanly; no horizontal page scroll.
 - [ ] Material Icons glyphs render (not raw names like "check_circle") on every button, `h2`, message and badge,
   in both light and dark mode.
@@ -63,33 +52,28 @@ Appearance and access
 ## Known gaps
 
 - The full manual checklist above has still not been run end-to-end by a person. Checked so far with headless
-  Chromium screenshots: the atom-count table and 3D legend (unbalanced/balanced states, a multi-element equation,
-  light and dark mode); the Material Icons font and score redesign (start screen, a wrong check, an
-  already-1/1/1 equation including the *Подсказка* no-op message, the solved state, both end-screen grade tiers,
-  dark mode). Still need a real device/browser pass: dragging, the three.js CDN fallback, WebGL-blocked fallback,
-  keyboard navigation and phone-width layout.
+  Chromium screenshots: the atom-count table (unbalanced/balanced states, a multi-element equation, light and
+  dark mode); the Material Icons font and score redesign (start screen, a wrong check, an already-1/1/1
+  equation including the *Подсказка* no-op message, the solved state, both end-screen grade tiers, dark mode);
+  the scroll-to-top fix on *Напред*. Still need a real device/browser pass: keyboard navigation and
+  phone-width layout.
 - Coefficients are capped at 10 and cannot go below 1.
-- Colour is the only element label inside the 3D spheres themselves; teal (Cs) and green (Cl) or lavender (Li) and
-  violet (I) may still look close on some screens even with the text legend below the scene.
+- Colour is the only element label in the atom-count table's chip; teal (Cs) and green (Cl) or lavender (Li)
+  and violet (I) may look close on some screens — the element symbol text next to each chip is the fallback.
 - Halogen displacement, MOH + CO₂ and M₂O + HX are not confirmed for 7th grade (see `docs/CURRICULUM.md`).
 - After the last equation there is no way to review individual answers, only the list of equations that caused
   trouble.
 - No persistence: reloading the page restarts the game.
-- Coordinates in `SHAPES` are hand-written (bond lengths are then scaled automatically). If a model looks off, fix it by eye.
 
 ## Ideas, roughly in order of value for the seminar
 
-1. **Reaction animation on success:** when solved, animate atoms from the reactant arrangement to the product
-   arrangement (tween positions). Strong visual proof of conservation of mass.
-2. **Reaction type tag** (съединяване / разлагане / заместване / неутрализация) shown after solving, or asked as a
+1. **Reaction type tag** (съединяване / разлагане / заместване / неутрализация) shown after solving, or asked as a
    bonus question. Part of the curriculum topic "Вещества и химични реакции".
-3. **Substance names** (наименования) after solving: "вода", "натриев хлорид"... Curriculum topic.
-4. **Mass fraction / molecular mass bonus** using the atomic masses (Масова част is a 7th grade lesson).
-5. ~~Atom legend and optional labels in 3D (accessibility).~~ Done: a text legend (colour chip + symbol + Bulgarian
-   name) below the 3D panes lists every element in the current equation.
-6. Timer mode or streak bonus.
-7. Save best score in `localStorage` with a try/catch fallback.
-8. More templates: `2M + S → M₂S`, `2M + H₂ → 2MH`, `Fe + X₂` (X = F, Cl, Br), Mg reactions.
-9. Teacher mode: choose which equations to include; export results.
-10. Split `index.html` into `index.html`, `style.css`, `game.js`, `molecules.js` once it grows beyond what one
-    person can explain in a seminar. Not needed now.
+2. **Substance names** (наименования) after solving: "вода", "натриев хлорид"... Curriculum topic.
+3. **Mass fraction / molecular mass bonus** using the atomic masses (Масова част is a 7th grade lesson).
+4. Timer mode or streak bonus.
+5. Save best score in `localStorage` with a try/catch fallback.
+6. More templates: `2M + S → M₂S`, `2M + H₂ → 2MH`, `Fe + X₂` (X = F, Cl, Br), Mg reactions.
+7. Teacher mode: choose which equations to include; export results.
+8. Split `index.html` into `index.html`, `style.css`, `game.js` once it grows beyond what one person can
+   explain in a seminar. Not needed now.

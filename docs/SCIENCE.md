@@ -10,7 +10,7 @@ So each element must have the same number of atoms on both sides.
   when balancing. Changing an index changes the substance.
 - Coefficients are the **smallest whole numbers**. A coefficient of 1 is not written.
 
-The 3D panels show it: same coloured spheres on both sides, grouped differently.
+The atom-count table shows it directly: the same element must have the same count on both sides.
 
 ## Reactions (M = Li, Na, K, Rb, Cs; X = F, Cl, Br, I unless restricted)
 
@@ -47,25 +47,12 @@ index 2 outside the bracket applies to the whole OH group).
 Sodium carbonate is **Na₂CO₃**, not "NaCO₃". Sodium is I valent and the CO₃ group is II valent, so two sodium atoms
 are needed. Baking soda is **NaHCO₃** (sodium hydrogencarbonate). The notes for the carbonate reactions say this.
 
-## Simplifications in the 3D models
+## Simplifications worth mentioning
 
 Be ready to say these out loud if asked. They are deliberate.
 
-1. **Shapes are stylised.** H₂O is bent and NH₃ a pyramid; other bond lengths are scaled automatically so spheres
-   never overlap and bonds are visible.
-2. **Ionic compounds** (MX, M₂O, MOH, M₂CO₃, MNO₃, AgX, CaCl₂, Al₂O₃ …) are not real molecules. They are crystals or
-   solutions of ions. The game draws one formula unit as a small ball-and-stick cluster, which is how 7th grade
+1. **Ionic compounds** (MX, M₂O, MOH, M₂CO₃, MNO₃, AgX, CaCl₂, Al₂O₃ …) are not real molecules. They are crystals or
+   solutions of ions. The game treats one formula unit as the "molecule" being counted, which is how 7th grade
    formulas are usually shown.
-3. **Bonds encode valence, not real bond type.** Every atom has as many bonds as its school valence (the validator
-   checks this). For ionic units a "bond" means "this atom is attached to that one in the formula".
-4. **Carbonate and hydrogencarbonate** are drawn as M–O–C(=O)–O–M (and M–O–C(=O)–O–H). The real ion has resonance
-   and charges.
-5. **Nitrate group** is drawn with nitrogen having five bonds (N bonded to O, =O, =O). This is a school-level
-   Lewis-style drawing; the real nitrate ion has charge separation and resonance, and nitrogen never has five bonds.
-   The validator allows N with 3 or 5 bonds for this reason.
-6. **Metals** (M, Al, Hg) are single atoms. Real metals are lattices (Hg is a liquid).
-7. **Phosphorus** is P, not P₄; **P₂O₅** is the school formula (real: P₄O₁₀).
-8. **HClO, MClO** are drawn H–O–X and M–O–X (X is I valent there).
-9. Reaction conditions (heating, catalysts, solvents, excess) are not shown.
-10. Element colours follow CPK loosely. H is light blue for contrast. Alkali metals have their own colours
-    (Li lavender, Na pink, K yellow, Rb orange, Cs teal).
+2. **Phosphorus** is P, not P₄; **P₂O₅** is the school formula (real: P₄O₁₀).
+3. Reaction conditions (heating, catalysts, solvents, excess) are not shown.

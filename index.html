@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Баланс – игра с химични уравнения (3D)</title>
+<title>Баланс – игра с химични уравнения</title>
 <style>
 :root{
   --bg:#f3f6f4; --card:#ffffff; --ink:#15231d; --muted:#5d6f66; --line:#d5ded9;
@@ -129,22 +129,7 @@ ul.wrong{padding-left:18px;margin:6px 0}
 .gradeicon.tier-great .material-icons{color:var(--ok)}
 .gradeicon.tier-good .material-icons{color:var(--accent)}
 .gradeicon.tier-retry .material-icons{color:var(--muted)}
-
-/* 3D scene */
-.scene{display:grid;grid-template-columns:1fr;gap:10px}
-@media (min-width:640px){.scene{grid-template-columns:1fr 1fr}}
-.pane{border:2px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg);transition:border-color .2s}
-.pane.bal{border-color:var(--ok)}
-.pane h3{margin:0;padding:8px 12px 0;font-size:.9rem;color:var(--muted);font-weight:600}
-.pane .sum{padding:2px 12px 0;font-weight:700;min-height:1.5em}
-.pane .sum sub{font-size:.7em}
-.pane canvas{display:block;width:100%;height:220px;touch-action:pan-y;cursor:grab}
-.pane canvas:active{cursor:grabbing}
-.hint3d{font-size:.8rem;color:var(--muted);margin:8px 0 0}
 .chip{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:8px;vertical-align:-2px;border:1px solid var(--dot-stroke)}
-.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:.85rem}
-.legend .litem{display:flex;align-items:center;white-space:nowrap}
-.legend .litem b{font-weight:800;margin-right:.3em}
 </style>
 </head>
 <body>
@@ -177,16 +162,6 @@ ul.wrong{padding-left:18px;margin:6px 0}
 
     <div class="card">
       <div class="eq" id="eq" aria-label="Химично уравнение"></div>
-    </div>
-
-    <div class="card" id="card3d">
-      <h2><span class="material-icons" aria-hidden="true">science</span>Атоми и молекули в 3D</h2>
-      <div class="scene">
-        <div class="pane" id="paneL"><h3>Изходни вещества</h3><div class="sum" id="sumL"></div><canvas id="cvL" aria-label="3D модел на изходните вещества"></canvas></div>
-        <div class="pane" id="paneR"><h3>Продукти</h3><div class="sum" id="sumR"></div><canvas id="cvR" aria-label="3D модел на продуктите"></canvas></div>
-      </div>
-      <div class="legend" id="legend3d" aria-label="Легенда на елементите"></div>
-      <p class="hint3d">Завърти модела с плъзгане. Рамката става зелена, когато двете страни имат едни и същи атоми.</p>
     </div>
 
     <div class="card">
@@ -225,14 +200,10 @@ ul.wrong{padding-left:18px;margin:6px 0}
 
 </div>
 
-<script src="vendor/three.min.js" onerror="var t=document.createElement('script');t.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';document.head.appendChild(t)"></script>
 <script>
 /* ---------- данни ---------- */
 const COLORS = {H:'#7dd3fc',O:'#ef4444',N:'#3b82f6',C:'#6b7280',F:'#86efac',Cl:'#22c55e',Br:'#92400e',I:'#7c3aed',
   Li:'#c4b5fd',Na:'#f472b6',K:'#facc15',Rb:'#f97316',Cs:'#0d9488',Ag:'#cbd5e1',Ca:'#fb923c',Al:'#a78bfa',P:'#eab308',Hg:'#94a3b8',Fe:'#f59e0b',Mg:'#14b8a6'};
-// Пълни български имена на елементите – за легендата под 3D модела.
-const EL_NAME = {H:'водород',O:'кислород',N:'азот',C:'въглерод',F:'флуор',Cl:'хлор',Br:'бром',I:'йод',
-  Li:'литий',Na:'натрий',K:'калий',Rb:'рубидий',Cs:'цезий',Ag:'сребро',Ca:'калций',Al:'алуминий',P:'фосфор',Hg:'живак',Fe:'желязо',Mg:'магнезий'};
 
 const ALK = ['Li','Na','K','Rb','Cs'];          // алкални метали
 const HAL = ['F','Cl','Br','I'];                // халогени
@@ -384,6 +355,7 @@ function loadEq(){
   const e=EQS[idx];
   coefs=e.sol.map(()=>1);
   mistakes=0; hints=0; solved=false;
+  window.scrollTo(0,0);
   $('lvlName').textContent=LEVELS[e.lvl]+'  ('+(idx+1)+'/'+EQS.length+')';
   $('prog').style.width=(idx/EQS.length*100)+'%';
   $('feedback').innerHTML='';
@@ -427,8 +399,6 @@ function render(){
     render();
   });
   renderCounter();
-  renderLegend();
-  update3D();
 }
 
 function totals(){
@@ -452,13 +422,6 @@ function renderCounter(){
     </tr>`;
   });
   $('counter').innerHTML=h;
-}
-
-function renderLegend(){
-  const {els}=totals();
-  $('legend3d').innerHTML=els.map(el=>
-    `<span class="litem"><span class="chip" style="background:${COLORS[el]||'#999'}"></span><b>${el}</b>${EL_NAME[el]||''}</span>`
-  ).join('');
 }
 
 /* ---------- логика ---------- */
@@ -533,184 +496,6 @@ function finish(){
   $('seedLbl').textContent='Вариант #'+currentSeed+' (добави ?seed='+currentSeed+' към адреса, за да повториш същите уравнения)';
   show('end');
 }
-
-/* ---------- 3D (three.js) ---------- */
-const S = 1.6;                       // мащаб на координатите
-const REDUCE = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-const RAD = {H:.28,O:.42,N:.42,C:.45,F:.38,Cl:.55,Br:.65,I:.78,Li:.45,Na:.6,K:.75,Rb:.85,Cs:.95,Ag:.7,Ca:.65,Al:.55,P:.5,Hg:.65,Fe:.6,Mg:.55};
-
-/* Форми. a: атоми [елемент,x,y,z]; b: връзки [i,j,ред]. Стилизирани, не точни, геометрии.
-   M = алкален метал, X = халоген: конкретният елемент се подставя от формулата (виж shapeOf).
-   Разстоянията се мащабират автоматично според радиусите (prepMol). */
-const nitrate = (m,len) => ({a:[['N',0,0,0],['O',-1.05,-.55,0],['O',0,1.15,0],['O',1.05,-.55,0],[m,-1.05-len*.95,-.55+len*.3,0]],
-                             b:[[0,1,1],[0,2,2],[0,3,2],[1,4,1]]});
-const carbonate = (m1,m2,l1,l2) => ({a:[['C',0,0,0],['O',0,1.15,0],['O',-1,-.6,0],['O',1,-.6,0],[m1,-1-l1,-.6+l1*.25,0],[m2,1+l2,-.6+l2*.25,0]],
-                                      b:[[0,1,2],[0,2,1],[0,3,1],[2,4,1],[3,5,1]]});
-const SHAPES = {
-  'H2':{a:[['H',-.4,0,0],['H',.4,0,0]],b:[[0,1,1]]},
-  'O2':{a:[['O',-.62,0,0],['O',.62,0,0]],b:[[0,1,2]]},
-  'N2':{a:[['N',-.6,0,0],['N',.6,0,0]],b:[[0,1,3]]},
-  'X2':{a:[['X',-.75,0,0],['X',.75,0,0]],b:[[0,1,1]]},
-  'H2O':{a:[['O',0,0,0],['H',.78,.6,0],['H',-.78,.6,0]],b:[[0,1,1],[0,2,1]]},
-  'NH3':{a:[['N',0,0,0],['H',.9,-.3,0],['H',-.45,-.3,.78],['H',-.45,-.3,-.78]],b:[[0,1,1],[0,2,1],[0,3,1]]},
-  'HX':{a:[['H',-.55,0,0],['X',.55,0,0]],b:[[0,1,1]]},
-  'MX':{a:[['M',-.8,0,0],['X',.8,0,0]],b:[[0,1,1]]},
-  'M2O':{a:[['O',0,-.1,0],['M',1,.75,0],['M',-1,.75,0]],b:[[0,1,1],[0,2,1]]},
-  'M2O2':{a:[['O',-.5,-.15,0],['O',.5,-.15,0],['M',-1.5,.7,0],['M',1.5,.7,0]],b:[[0,1,1],[0,2,1],[1,3,1]]},
-  'MOH':{a:[['M',-1.05,-.2,0],['O',0,0,0],['H',.6,.55,0]],b:[[0,1,1],[1,2,1]]},
-  'HXO':{a:[['H',-.6,.55,0],['O',0,0,0],['X',1.0,-.25,0]],b:[[0,1,1],[1,2,1]]},
-  'MXO':{a:[['M',-1.05,-.2,0],['O',0,0,0],['X',1.05,-.3,0]],b:[[0,1,1],[1,2,1]]},
-  'CO2':{a:[['O',-1.2,0,0],['C',0,0,0],['O',1.2,0,0]],b:[[0,1,2],[1,2,2]]},
-  'M2CO3':carbonate('M','M',1.2,1.2),
-  'MHCO3':carbonate('M','H',1.2,.8),
-  'AgX':{a:[['Ag',-.9,0,0],['X',.9,0,0]],b:[[0,1,1]]},
-  'AgNO3':nitrate('Ag',1.2),
-  'MNO3':nitrate('M',1.2),
-  'HNO3':nitrate('H',.75),
-  'HgO':{a:[['Hg',-.7,0,0],['O',.7,0,0]],b:[[0,1,2]]},
-  'Ca(OH)2':{a:[['Ca',0,0,0],['O',1,.25,0],['H',1.5,.8,0],['O',-1,.25,0],['H',-1.5,.8,0]],b:[[0,1,1],[1,2,1],[0,3,1],[3,4,1]]},
-  'CaX2':{a:[['Ca',0,0,0],['X',1.15,0,0],['X',-1.15,0,0]],b:[[0,1,1],[0,2,1]]},
-  'AlX3':{a:[['Al',0,0,0],['X',1.1,0,0],['X',-.55,.95,0],['X',-.55,-.95,0]],b:[[0,1,1],[0,2,1],[0,3,1]]},
-  'Al2O3':{a:[['Al',-1,0,0],['Al',1,0,0],['O',0,.95,0],['O',0,-.5,.9],['O',0,-.5,-.9]],b:[[0,2,1],[1,2,1],[0,3,1],[1,3,1],[0,4,1],[1,4,1]]},
-  'P2O5':{a:[['P',-.9,0,0],['P',.9,0,0],['O',0,.45,0],['O',-1.55,.9,.4],['O',-1.55,-.75,-.5],['O',1.55,.9,.4],['O',1.55,-.75,-.5]],
-          b:[[0,2,1],[1,2,1],[0,3,2],[0,4,2],[1,5,2],[1,6,2]]},
-  'M':{a:[['M',0,0,0]],b:[]},
-  'Hg':{a:[['Hg',0,0,0]],b:[]},
-  'Al':{a:[['Al',0,0,0]],b:[]},
-  'P':{a:[['P',0,0,0]],b:[]}
-};
-// Намира форма за формула: първо точно съвпадение, иначе заменя алкален метал с M и халоген с X.
-// Връща {def, map} – map казва кой реален елемент стои на мястото на M и X.
-function shapeOf(f){
-  const map={};
-  const key=f.replace(/[A-Z][a-z]?/g, el => { if(ALK.includes(el)){ map.M=el; return 'M'; } if(HAL.includes(el)){ map.X=el; return 'X'; } return el; });
-  return {def:SHAPES[f]||SHAPES[key], map, key};
-}
-
-const _prep={}, _geo={}, _mat={};
-function prepMol(f){
-  if(_prep[f]) return _prep[f];
-  const {def,map}=shapeOf(f); if(!def) throw new Error('Няма 3D модел за '+f);
-  const els=def.a.map(a=>map[a[0]]||a[0]);
-  const c=def.a.reduce((v,a)=>[v[0]+a[1],v[1]+a[2],v[2]+a[3]],[0,0,0]).map(x=>x/def.a.length);
-  const pts=def.a.map(a=>new THREE.Vector3((a[1]-c[0])*S,(a[2]-c[1])*S,(a[3]-c[2])*S));
-  // мащаб: всяка връзка да е поне (сума на радиусите + 0.5), но не повече от 25% свиване
-  let k=.75;
-  def.b.forEach(([i,j])=>{ k=Math.max(k,(RAD[els[i]]+RAD[els[j]]+.5)/pts[i].distanceTo(pts[j])); });
-  pts.forEach(p=>p.multiplyScalar(k));
-  const atoms=pts.map((p,i)=>({el:els[i],p}));
-  const r=Math.max(...atoms.map(a=>a.p.length()+RAD[a.el]));
-  return _prep[f]={atoms,bonds:def.b,r};
-}
-function sphereGeo(el){ return _geo[el]||(_geo[el]=new THREE.SphereGeometry(RAD[el],24,16)); }
-function atomMat(el){ return _mat[el]||(_mat[el]=new THREE.MeshStandardMaterial({color:new THREE.Color(COLORS[el]||'#999999'),roughness:.45,metalness:.05})); }
-let _bondGeo=null,_bondMat=null;
-function buildMol(f){
-  if(!_bondGeo){ _bondGeo=new THREE.CylinderGeometry(.07,.07,1,10); _bondMat=new THREE.MeshStandardMaterial({color:0x9aa5a0,roughness:.6}); }
-  const m=prepMol(f), g=new THREE.Group(), up=new THREE.Vector3(0,1,0);
-  m.atoms.forEach(a=>{ const s=new THREE.Mesh(sphereGeo(a.el),atomMat(a.el)); s.position.copy(a.p); g.add(s); });
-  m.bonds.forEach(([i,j,o])=>{
-    const p1=m.atoms[i].p, p2=m.atoms[j].p;
-    const dir=new THREE.Vector3().subVectors(p2,p1), L=dir.length(); dir.normalize();
-    const side=new THREE.Vector3().crossVectors(dir,Math.abs(dir.y)>.9?new THREE.Vector3(1,0,0):up).normalize();
-    (o===1?[0]:o===2?[-.11,.11]:[-.2,0,.2]).forEach(off=>{
-      const c=new THREE.Mesh(_bondGeo,_bondMat);
-      c.scale.set(1,L,1);
-      c.position.copy(p1).add(p2).multiplyScalar(.5).addScaledVector(side,off);
-      c.quaternion.setFromUnitVectors(up,dir);
-      g.add(c);
-    });
-  });
-  return g;
-}
-function rnd(i){ const x=Math.sin(i*127.1+311.7)*43758.5453; return x-Math.floor(x); }
-
-class Viewer{
-  constructor(canvas){
-    this.canvas=canvas; this.items=[]; this.mols=[]; this.t=0; this.rx=.15; this.ry=.4; this.drag=false;
-    this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
-    this.scene=new THREE.Scene();
-    this.camera=new THREE.PerspectiveCamera(40,1.4,.1,300);
-    this.scene.add(new THREE.AmbientLight(0xffffff,.7));
-    const d=new THREE.DirectionalLight(0xffffff,.9); d.position.set(5,8,10); this.scene.add(d);
-    this.root=new THREE.Group(); this.scene.add(this.root);
-    canvas.addEventListener('pointerdown',e=>{ this.drag=true; this.lx=e.clientX; this.ly=e.clientY; canvas.setPointerCapture(e.pointerId); });
-    canvas.addEventListener('pointermove',e=>{
-      if(!this.drag) return;
-      const dx=e.clientX-this.lx, dy=e.clientY-this.ly; this.lx=e.clientX; this.ly=e.clientY;
-      this.ry+=dx*.01;
-      if(e.pointerType==='mouse') this.rx=Math.max(-1.2,Math.min(1.2,this.rx+dy*.01));
-    });
-    ['pointerup','pointercancel'].forEach(ev=>canvas.addEventListener(ev,()=>{ this.drag=false; }));
-    new ResizeObserver(()=>this.resize()).observe(canvas);
-  }
-  resize(){
-    const w=this.canvas.clientWidth, h=this.canvas.clientHeight;
-    if(!w||!h) return;
-    this.renderer.setSize(w,h,false);
-    this.camera.aspect=w/h; this.camera.updateProjectionMatrix();
-    this.rebuild();
-  }
-  setItems(items){ this.items=items; this.rebuild(); }
-  rebuild(){
-    while(this.root.children.length) this.root.remove(this.root.children[0]);
-    this.mols=[];
-    const list=[]; this.items.forEach(it=>{ for(let k=0;k<it.count;k++) list.push(it.formula); });
-    const n=list.length; if(!n) return;
-    let maxR=0; list.forEach(f=>{ maxR=Math.max(maxR,prepMol(f).r); });
-    const sp=maxR*2+.5, asp=this.camera.aspect;
-    const cols=Math.max(1,Math.min(n,Math.round(Math.sqrt(n*asp)))), rows=Math.ceil(n/cols);
-    list.forEach((f,i)=>{
-      const g=buildMol(f), r=Math.floor(i/cols), c=i%cols;
-      const inRow = r===rows-1 ? n-r*cols : cols;
-      g.position.set((c-(inRow-1)/2)*sp, -(r-(rows-1)/2)*sp, 0);
-      g.rotation.set(rnd(i)*6.283,rnd(i+50)*6.283,0);
-      g.userData={by:g.position.y,ph:rnd(i+9)*6.283,spin:.25+rnd(i+3)*.35};
-      this.root.add(g); this.mols.push(g);
-    });
-    const t=Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2));
-    const dist=Math.max(rows*sp/2/t, cols*sp/2/(t*asp))*1.15+maxR;
-    this.camera.position.set(0,0,dist); this.camera.lookAt(0,0,0);
-  }
-  frame(dt){
-    if(this.canvas.offsetParent===null) return;   // скрит
-    this.t+=dt;
-    if(!REDUCE){
-      if(!this.drag) this.ry+=dt*.25;
-      this.mols.forEach(g=>{ g.rotation.y+=dt*g.userData.spin; g.position.y=g.userData.by+Math.sin(this.t*1.2+g.userData.ph)*.1; });
-    }
-    this.root.rotation.set(this.rx,this.ry,0);
-    this.renderer.render(this.scene,this.camera);
-  }
-}
-
-let VL=null, VR=null, _last=0;
-function loop(t){
-  requestAnimationFrame(loop);
-  const dt=Math.min(.05,(t-_last)/1000); _last=t;
-  if(VL) VL.frame(dt); if(VR) VR.frame(dt);
-}
-function update3D(){
-  if(!VL||!VR||idx===undefined||!coefs) return;
-  const e=EQS[idx]; if(!e) return;
-  const mk=(arr,off)=>arr.map((f,i)=>({formula:f,count:coefs[off+i]}));
-  const L=mk(e.left,0), R=mk(e.right,e.left.length);
-  VL.setItems(L); VR.setItems(R);
-  const txt=a=>a.map(x=>(x.count>1?x.count+' ':'')+pretty(x.formula)).join(' + ');
-  $('sumL').innerHTML=txt(L); $('sumR').innerHTML=txt(R);
-  const bal=isBalanced();
-  $('paneL').classList.toggle('bal',bal); $('paneR').classList.toggle('bal',bal);
-}
-function init3D(){
-  const off=()=>{ $('card3d').classList.add('hidden'); VL=VR=null; };
-  if(typeof THREE==='undefined'){ off(); return; }
-  try{ VL=new Viewer($('cvL')); VR=new Viewer($('cvR')); }
-  catch(err){ console.warn('WebGL не е наличен:',err); off(); return; }
-  requestAnimationFrame(loop);
-  update3D();
-}
-window.addEventListener('load',init3D);
 
 $('btnStart').onclick=startGame;
 $('btnAgain').onclick=startGame;
