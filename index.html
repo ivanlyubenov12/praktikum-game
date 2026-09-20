@@ -31,10 +31,13 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","
 h1{font-size:2rem;margin:0 0 4px;letter-spacing:-.02em}
 h2{font-size:1.15rem;margin:0 0 10px}
 .muted{color:var(--muted)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
-button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 16px;min-height:44px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 1px 2px rgba(15,23,20,.04)}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 16px;min-height:44px;transition:background-color .15s,border-color .15s,transform .1s}
+button:hover:not(:disabled){border-color:var(--accent);transform:translateY(-1px)}
+button:active:not(:disabled){transform:translateY(0)}
 button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+button.primary:hover:not(:disabled){filter:brightness(1.08)}
 button:disabled{opacity:.45;cursor:not-allowed}
 .hidden{display:none!important}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px;font-size:.95rem}
@@ -58,14 +61,25 @@ button:disabled{opacity:.45;cursor:not-allowed}
 @media (prefers-reduced-motion:reduce){.shake{animation:none}}
 
 /* counter */
-.counter{width:100%;border-collapse:collapse}
-.counter th{font-size:.85rem;color:var(--muted);font-weight:600;text-align:left;padding:4px 6px}
-.counter td{padding:8px 6px;border-top:1px solid var(--line);vertical-align:middle}
-.counter td.num{font-weight:800;font-size:1.1rem;width:2.5em;text-align:center;border-radius:8px}
-.counter td.el{font-weight:800;width:3em}
-.counter td.st{width:2.2em;text-align:center;font-size:1.2rem}
-.eqok{background:var(--ok-bg);color:var(--ok)}
-.eqno{background:var(--bad-bg);color:var(--bad)}
+.counter{width:100%;border-collapse:separate;border-spacing:0 8px}
+.counter th{font-size:.78rem;color:var(--muted);font-weight:700;text-align:center;padding:0 6px 2px;text-transform:uppercase;letter-spacing:.03em}
+.counter th:first-child{text-align:left}
+.counter td{padding:10px 8px;vertical-align:middle}
+.counter tr.row-ok td{background:var(--ok-bg)}
+.counter tr.row-bad td{background:var(--bad-bg)}
+.counter tr td:first-child{border-radius:10px 0 0 10px}
+.counter tr td:last-child{border-radius:0 10px 10px 0}
+.counter td.el{font-weight:800;white-space:nowrap}
+.counter td.num{width:38%}
+.numval{display:block;font-weight:800;font-size:1.15rem;text-align:center;margin-bottom:4px}
+.barwrap{height:8px;border-radius:4px;background:rgba(127,127,127,.22);overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;background:var(--muted)}
+.row-ok .bar-fill{background:var(--ok)}
+.row-bad .bar-fill{background:var(--bad)}
+.counter td.st{width:2.6em;text-align:center}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;font-weight:800;font-size:1.05rem;line-height:1}
+.badge.ok{background:var(--ok);color:#fff}
+.badge.bad{background:var(--bad);color:#fff}
 .dots{display:flex;flex-wrap:wrap;gap:3px}
 .dot{width:12px;height:12px;border-radius:50%;border:1px solid var(--dot-stroke)}
 
@@ -91,6 +105,9 @@ ul.wrong{padding-left:18px;margin:6px 0}
 .pane canvas:active{cursor:grabbing}
 .hint3d{font-size:.8rem;color:var(--muted);margin:8px 0 0}
 .chip{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:8px;vertical-align:-2px;border:1px solid var(--dot-stroke)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:.85rem}
+.legend .litem{display:flex;align-items:center;white-space:nowrap}
+.legend .litem b{font-weight:800;margin-right:.3em}
 </style>
 </head>
 <body>
@@ -131,6 +148,7 @@ ul.wrong{padding-left:18px;margin:6px 0}
         <div class="pane" id="paneL"><h3>Реагенти</h3><div class="sum" id="sumL"></div><canvas id="cvL" aria-label="3D модел на реагентите"></canvas></div>
         <div class="pane" id="paneR"><h3>Продукти</h3><div class="sum" id="sumR"></div><canvas id="cvR" aria-label="3D модел на продуктите"></canvas></div>
       </div>
+      <div class="legend" id="legend3d" aria-label="Легенда на елементите"></div>
       <p class="hint3d">Завърти модела с плъзгане. Рамката става зелена, когато двете страни имат едни и същи атоми.</p>
     </div>
 
@@ -173,6 +191,9 @@ ul.wrong{padding-left:18px;margin:6px 0}
 /* ---------- данни ---------- */
 const COLORS = {H:'#7dd3fc',O:'#ef4444',N:'#3b82f6',C:'#6b7280',F:'#86efac',Cl:'#22c55e',Br:'#92400e',I:'#7c3aed',
   Li:'#c4b5fd',Na:'#f472b6',K:'#facc15',Rb:'#f97316',Cs:'#0d9488',Ag:'#cbd5e1',Ca:'#fb923c',Al:'#a78bfa',P:'#eab308',Hg:'#94a3b8',Fe:'#f59e0b',Mg:'#14b8a6'};
+// Пълни български имена на елементите – за легендата под 3D модела.
+const EL_NAME = {H:'водород',O:'кислород',N:'азот',C:'въглерод',F:'флуор',Cl:'хлор',Br:'бром',I:'йод',
+  Li:'литий',Na:'натрий',K:'калий',Rb:'рубидий',Cs:'цезий',Ag:'сребро',Ca:'калций',Al:'алуминий',P:'фосфор',Hg:'живак',Fe:'желязо',Mg:'магнезий'};
 
 const ALK = ['Li','Na','K','Rb','Cs'];          // алкални метали
 const HAL = ['F','Cl','Br','I'];                // халогени
@@ -360,6 +381,7 @@ function render(){
     render();
   });
   renderCounter();
+  renderLegend();
   update3D();
 }
 
@@ -373,17 +395,24 @@ function totals(){
 
 function renderCounter(){
   const {L,R,els}=totals();
-  let h='<tr><th>Елемент</th><th>Отляво</th><th>Отдясно</th><th></th></tr>';
+  let h='<tr><th>Елемент</th><th>Отляво</th><th></th><th>Отдясно</th></tr>';
   els.forEach(el=>{
-    const l=L[el]||0, r=R[el]||0, ok=l===r;
-    h+=`<tr>
+    const l=L[el]||0, r=R[el]||0, ok=l===r, top=Math.max(l,r,1);
+    h+=`<tr class="${ok?'row-ok':'row-bad'}">
       <td class="el"><span class="chip" style="background:${COLORS[el]||'#999'}"></span>${el}</td>
-      <td class="num ${ok?'eqok':'eqno'}">${l}</td>
-      <td class="num ${ok?'eqok':'eqno'}">${r}</td>
-      <td class="st" aria-label="${ok?'равно':'различно'}">${ok?'=':'≠'}</td>
+      <td class="num"><span class="numval">${l}</span><div class="barwrap"><div class="bar-fill" style="width:${l/top*100}%"></div></div></td>
+      <td class="st"><span class="badge ${ok?'ok':'bad'}" aria-label="${ok?'равно':'различно'}">${ok?'✓':'✗'}</span></td>
+      <td class="num"><span class="numval">${r}</span><div class="barwrap"><div class="bar-fill" style="width:${r/top*100}%"></div></div></td>
     </tr>`;
   });
   $('counter').innerHTML=h;
+}
+
+function renderLegend(){
+  const {els}=totals();
+  $('legend3d').innerHTML=els.map(el=>
+    `<span class="litem"><span class="chip" style="background:${COLORS[el]||'#999'}"></span><b>${el}</b>${EL_NAME[el]||''}</span>`
+  ).join('');
 }
 
 /* ---------- логика ---------- */

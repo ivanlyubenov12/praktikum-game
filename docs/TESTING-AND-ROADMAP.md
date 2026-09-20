@@ -55,15 +55,17 @@ Appearance and access
 
 ## Known gaps
 
-- Not run in a browser by the author of this code (see above).
+- The full manual checklist above has still not been run end-to-end by a person. The atom-count table and 3D
+  legend were checked with a headless Chromium screenshot (start screen, unbalanced/balanced states, a
+  multi-element equation, light and dark mode) after the UI redesign, but dragging, the CDN fallback, WebGL-blocked
+  fallback, keyboard navigation and phone-width layout still need a real device/browser pass.
 - Coefficients are capped at 10 and cannot go below 1.
-- Colour is the only element label in 3D; teal (Cs) and green (Cl) or lavender (Li) and violet (I) may look close on some screens.
+- Colour is the only element label inside the 3D spheres themselves; teal (Cs) and green (Cl) or lavender (Li) and
+  violet (I) may still look close on some screens even with the text legend below the scene.
 - Halogen displacement, MOH + CO₂ and M₂O + HX are not confirmed for 7th grade (see `docs/CURRICULUM.md`).
 - After the last equation there is no way to review individual answers, only the list of equations that caused
   trouble.
 - No persistence: reloading the page restarts the game.
-- Colour is the main channel for element identity in 3D. There are no atom labels, so colour-blind users rely on
-  the table with element symbols. Adding labels or a legend would help.
 - Coordinates in `SHAPES` are hand-written (bond lengths are then scaled automatically). If a model looks off, fix it by eye.
 
 ## Ideas, roughly in order of value for the seminar
@@ -74,7 +76,8 @@ Appearance and access
    bonus question. Part of the curriculum topic "Вещества и химични реакции".
 3. **Substance names** (наименования) after solving: "вода", "натриев хлорид"... Curriculum topic.
 4. **Mass fraction / molecular mass bonus** using the atomic masses (Масова част is a 7th grade lesson).
-5. Atom legend and optional labels in 3D (accessibility).
+5. ~~Atom legend and optional labels in 3D (accessibility).~~ Done: a text legend (colour chip + symbol + Bulgarian
+   name) below the 3D panes lists every element in the current equation.
 6. Timer mode or streak bonus.
 7. Save best score in `localStorage` with a try/catch fallback.
 8. More templates: `2M + S → M₂S`, `2M + H₂ → 2MH`, `Fe + X₂` (X = F, Cl, Br), Mg reactions.
