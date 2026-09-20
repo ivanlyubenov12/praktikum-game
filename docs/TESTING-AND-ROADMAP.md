@@ -26,6 +26,8 @@ Load
 - [ ] Press *Започни*: two 3D panels show coloured molecules that slowly rotate.
 - [ ] Rename `vendor/` temporarily: page still loads three.js from the CDN (needs internet). Rename it back.
 - [ ] Block WebGL (or delete `vendor/` and go offline): the 3D card disappears, the game still works.
+- [ ] Rename `vendor/MaterialIcons.woff2` temporarily: buttons and headings still work but show the raw icon
+  name (e.g. "play_arrow Започни") instead of a glyph — ugly, not broken. Rename it back.
 
 Gameplay
 - [ ] Open `index.html?seed=42`. First equation is `4Na + O₂ → 2Na₂O`. Press + on Na twice → the left panel shows 3 Na atoms.
@@ -36,6 +38,9 @@ Gameplay
 - [ ] Set 4, 2, 4 for H₂ + O₂ → H₂O: message says balanced but not smallest numbers, no penalty.
 - [ ] *Подсказка*: fixes one coefficient, potential drops by 25.
 - [ ] Correct answer: green message, science note, +points, buttons locked, *Напред* appears.
+- [ ] An equation whose solution is already 1/1/1 (e.g. `M₂O + CO₂ → M₂CO₃`, `MOH + HX → MX + H₂O`): loads already
+  green (table and both 3D frames), *Провери* immediately scores full points, *Подсказка* shows an "already
+  correct" message instead of doing nothing.
 - [ ] Play all 12 equations of a few different seeds. Check especially: 2HgO, Al₂O₃, P₂O₅, Ca(OH)₂, carbonates (M₂CO₃, MHCO₃), AgNO₃, HClO / MClO.
 - [ ] End screen: score, list of equations with mistakes or hints, *Играй отново* resets everything.
 
@@ -52,13 +57,17 @@ Appearance and access
 - [ ] Keyboard: Tab reaches every button, focus ring visible, Enter/Space works.
 - [ ] `prefers-reduced-motion` on: no auto-rotation or bobbing, no shake.
 - [ ] Phone width around 360 px: equation with 4 terms wraps cleanly; no horizontal page scroll.
+- [ ] Material Icons glyphs render (not raw names like "check_circle") on every button, `h2`, message and badge,
+  in both light and dark mode.
 
 ## Known gaps
 
-- The full manual checklist above has still not been run end-to-end by a person. The atom-count table and 3D
-  legend were checked with a headless Chromium screenshot (start screen, unbalanced/balanced states, a
-  multi-element equation, light and dark mode) after the UI redesign, but dragging, the CDN fallback, WebGL-blocked
-  fallback, keyboard navigation and phone-width layout still need a real device/browser pass.
+- The full manual checklist above has still not been run end-to-end by a person. Checked so far with headless
+  Chromium screenshots: the atom-count table and 3D legend (unbalanced/balanced states, a multi-element equation,
+  light and dark mode); the Material Icons font and score redesign (start screen, a wrong check, an
+  already-1/1/1 equation including the *Подсказка* no-op message, the solved state, both end-screen grade tiers,
+  dark mode). Still need a real device/browser pass: dragging, the three.js CDN fallback, WebGL-blocked fallback,
+  keyboard navigation and phone-width layout.
 - Coefficients are capped at 10 and cannot go below 1.
 - Colour is the only element label inside the 3D spheres themselves; teal (Cs) and green (Cl) or lavender (Li) and
   violet (I) may still look close on some screens even with the text legend below the scene.

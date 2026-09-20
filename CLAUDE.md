@@ -12,6 +12,10 @@ alkali metals / halogens. Read `README.md` first, then the relevant file in `doc
 - **three.js r128, global build** (`vendor/three.min.js`, `THREE` global). Do not switch to ES modules or a
   newer version without checking that `file://` loading still works. `OrbitControls` is not bundled;
   rotation is implemented by hand in `Viewer`.
+- **Icons are the Material Icons webfont**, self-hosted at `vendor/MaterialIcons.woff2` (no CDN, no fallback —
+  see `docs/TESTING-AND-ROADMAP.md`). Use `<span class="material-icons" aria-hidden="true">icon_name</span>`
+  next to a real Bulgarian text label, never instead of one. Check a name exists in the font before using it
+  (https://fonts.google.com/icons, classic "Material Icons" family, not "Material Symbols").
 - **Chemistry must be correct and 7th-grade level.** No organic chemistry, no redox balancing, no ions or
   charges. A template must be chemically valid for **every** element it allows. If it is not (e.g. fluorine with
   water, LiHCO₃), restrict `vars` or `ok`. Reasons for existing restrictions are in `docs/SCIENCE.md`.

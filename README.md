@@ -17,7 +17,11 @@ No build step, no install.
 1. Open `index.html` in a browser (double-click is fine).
 2. three.js is bundled in `vendor/three.min.js`, so it works offline. If that file is missing, the page tries
    the cdnjs copy of the same version (needs internet).
-3. If WebGL is unavailable, the 3D card hides itself and the game still works (table + buttons).
+3. The Material Icons webfont is bundled in `vendor/MaterialIcons.woff2`, also for offline use, no CDN fallback.
+   Icons are implemented as ligatures (the DOM text is literally `play_arrow`, `check`, …), so if that file is
+   ever missing, those labels would show as raw English icon names instead of a glyph — keep it next to
+   `index.html`.
+4. If WebGL is unavailable, the 3D card hides itself and the game still works (table + buttons).
 
 **Repeatable game (for demos and tests):** add `?seed=123` to the address, e.g. `index.html?seed=123`.
 The same seed always gives the same 12 equations. Pressing "play again" uses seed+1. Without `?seed=`, each game
@@ -50,6 +54,8 @@ gets a random seed, and the end screen shows it.
 | `tools/validate.js` | `node tools/validate.js`: checks every equation the generator can produce, and every 3D shape. |
 | `vendor/three.min.js` | three.js r128 (MIT). Do not edit. |
 | `vendor/THREE-LICENSE.txt` | three.js license. |
+| `vendor/MaterialIcons.woff2` | Material Icons webfont, ligature-based (Apache 2.0). Do not edit. |
+| `vendor/MATERIAL-ICONS-LICENSE.txt` | Material Icons license. |
 | `CLAUDE.md` | Instructions and conventions for Claude Code. |
 | `SEMINAR.md` | Демо сценарий и възможни въпроси (на български). |
 | `docs/ARCHITECTURE.md` | Code structure, templates, generator, state, scoring. |
