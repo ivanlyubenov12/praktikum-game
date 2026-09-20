@@ -49,6 +49,9 @@ Appearance and access
 - [ ] Keyboard: Tab reaches every button, focus ring visible, Enter/Space works.
 - [ ] `prefers-reduced-motion` on: no shake animation.
 - [ ] Phone width around 360 px: equation with 4 terms wraps cleanly; no horizontal page scroll.
+- [ ] Play through several equations in a row: the first +/− button stays in the same spot each time (the row
+  is left-anchored, not centered, so it doesn't jump left/right just because a different equation has more or
+  longer terms).
 - [ ] Material Icons glyphs render (not raw names like "check_circle") on every button, `h2`, message and badge,
   in both light and dark mode.
 
