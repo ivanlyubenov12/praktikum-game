@@ -34,7 +34,8 @@ gets a random seed, and the end screen shows it.
 
 ## Levels
 
-1. Combination and decomposition: `4M + O₂`, `2M + X₂`, `H₂ + X₂`, `M₂O + H₂O`, plus a few classics.
+1. Combination and decomposition: `4M + O₂`, `2M + O₂ → M₂O₂` (Rb, Cs peroxide), `2M₂O₂ → 2M₂O + O₂`,
+   `2M + X₂`, `H₂ + X₂`, `M₂O + H₂O`, plus a few classics.
 2. Substitution and neutralisation: `2M + 2H₂O`, `MOH + HX`, `M₂O + 2HX`, plus Al/P oxides, `Al + HCl`, `Ca(OH)₂ + HCl`.
 3. Chlorine, carbonates and qualitative reactions: `X₂ + H₂O`, `X₂ + 2MOH`, `2MOH + CO₂`, `2NaHCO₃ → …`,
    `M₂CO₃ + 2HX`, `AgNO₃ + HX`, halogen displacement.

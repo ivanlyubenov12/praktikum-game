@@ -18,7 +18,9 @@ Valences: H, all alkali metals, all halogens, Ag: I. O, Hg, Ca: II. N, Al: III. 
 
 | Reaction | Type | Restriction and reason |
 |---|---|---|
-| 4M + O₂ → 2M₂O | combination | School-level product. In reality only Li gives mostly M₂O; Na gives mostly peroxide (Na₂O₂), K, Rb, Cs give superoxides (MO₂). The note says so |
+| 4M + O₂ → 2M₂O | combination | **M = Li, Na, K only.** School-level product, simplified for Na and K too. In reality only Li gives mostly M₂O; Na gives mostly peroxide (Na₂O₂); K gives mostly superoxide (KO₂). The note says so |
+| 2M + O₂ → M₂O₂ | combination | **M = Rb, Cs only.** These are true, isolable peroxides (Rb₂O₂, Cs₂O₂), used here as the more-active-metal counterpart to the M₂O reaction above. In reality Rb and Cs actually favour superoxides (MO₂) over peroxides at this level of detail, but MO₂ would need an odd-electron/paramagnetic structure that is out of scope for 7th grade, so the game stops at the peroxide |
+| 2M₂O₂ → 2M₂O + O₂ | thermal decomposition | **M = Rb, Cs only.** Pairs with the reaction above: strong heating drives a peroxide down to the oxide plus oxygen |
 | 2M + X₂ → 2MX | combination | none |
 | H₂ + X₂ → 2HX | combination | none at school level (F₂ reacts explosively even in the dark, I₂ reversibly; not mentioned in the game) |
 | M₂O + H₂O → 2MOH | combination | none |
