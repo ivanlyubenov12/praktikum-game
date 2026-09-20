@@ -47,6 +47,9 @@ Gameplay
 Appearance and access
 - [ ] Dark mode (system setting): text readable, cards visible, atom colours distinguishable.
 - [ ] Keyboard: Tab reaches every button, focus ring visible, Enter/Space works.
+- [ ] On a touch device, tap a +/− button: it does not visibly shift or grow, and stays that way (the
+  hover lift is scoped to `(hover:hover) and (pointer:fine)`, since touch browsers can "stick" `:hover`
+  after a tap). On a real mouse, hovering a button still lifts it slightly.
 - [ ] `prefers-reduced-motion` on: no shake animation.
 - [ ] Phone width around 360 px: a wide equation (4-5 terms) never wraps to a second line. Instead the row
   itself scrolls horizontally within its card (swipe on a touch device) and every term, including the last
