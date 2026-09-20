@@ -29,9 +29,9 @@ with a neighbouring substance. "My choice" = fits the topics but I found no matc
 
 | Level | Template | Basis |
 |---|---|---|
-| 1 | 4M + O₂ → 2M₂O (Li, Na, K) | Source for Na (scheme 1). Li, K: pattern |
-| 1 | 2M + O₂ → M₂O₂ (Rb, Cs) | My choice. Not in a 7th grade source; added so the more reactive alkali metals don't reuse the Na₂O-style oxide. Real chemistry (docs/SCIENCE.md), simplified to peroxide rather than superoxide |
-| 1 | 2M₂O₂ → 2M₂O + O₂ (Rb, Cs) | My choice, pattern with 2HgO → 2Hg + O₂ below (thermal decomposition) |
+| 1 | 4M + O₂ → 2M₂O (Li, Na) | Source for Na (scheme 1). Li: pattern |
+| 1 | 2M + O₂ → M₂O₂ (K, Rb, Cs) | My choice. Not in a 7th grade source; added so the more reactive alkali metals don't reuse the Na₂O-style oxide. Real chemistry (docs/SCIENCE.md), simplified to peroxide rather than superoxide |
+| 1 | 2M₂O₂ → 2M₂O + O₂ (K, Rb, Cs) | My choice, pattern with 2HgO → 2Hg + O₂ below (thermal decomposition) |
 | 1 | 2M + X₂ → 2MX | Source for Na + Cl₂ (scheme 1); Li + Cl₂ in Просвета. Other combinations: pattern |
 | 1 | H₂ + X₂ → 2HX | Source for H₂ + Cl₂ (scheme 2, Булвест exercise). Others: pattern |
 | 1 | M₂O + H₂O → 2MOH | Source for Na₂O (scheme 1). Others: pattern |
