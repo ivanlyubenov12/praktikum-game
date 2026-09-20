@@ -68,7 +68,7 @@ Globals: `let EQS, idx, coefs, score, mistakes, hints, solved, wrong, currentSee
 ## Flow
 
 ```
-startGame → generateSet → loadEq → render (→ renderCounter, update3D)
+startGame → generateSet → loadEq → render (→ renderCounter, renderLegend, update3D)
    +/- click → coefs change → render
    Провери → check():
         not balanced        → mistakes++, message, shake
@@ -85,13 +85,16 @@ to `score` when the equation is solved.
 
 ## Rendering
 
-`render()` rebuilds the equation row (buttons + formulas), then `renderCounter()` (table with colour chips), then
-`update3D()`. It re-creates DOM on every click; that is fine at this size.
+`render()` rebuilds the equation row (buttons + formulas), then `renderCounter()` (atom-count rows, each with a
+colour chip, a proportional bar per side and a ✓/✗ badge), then `renderLegend()` (colour chip + symbol + Bulgarian
+name for every element in the current equation, shown under the 3D panes), then `update3D()`. It re-creates DOM on
+every click; that is fine at this size.
 
 ## Theming and accessibility
 
 CSS custom properties on `:root`, dark variants under `prefers-color-scheme: dark` and `[data-theme]`.
-Element colours live in JS (`COLORS`) because three.js needs them; the counter table chips reuse them.
+Element colours live in JS (`COLORS`) because three.js needs them; the counter table chips and the 3D legend reuse
+them. `EL_NAME` holds the Bulgarian display name per element, used only by the legend.
 Buttons have `aria-label`s, focus outlines are visible, motion respects `prefers-reduced-motion`.
 
 ## Validation
