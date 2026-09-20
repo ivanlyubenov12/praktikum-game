@@ -74,15 +74,15 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .lvl{font-weight:700;color:var(--accent)}
 
 /* equation */
-.eq{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;gap:10px 6px}
-.term{display:flex;flex-direction:column;align-items:center;gap:2px}
+.eq{display:flex;flex-wrap:nowrap;align-items:flex-end;justify-content:safe center;gap:10px 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px}
+.term{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
 .ctrl{display:flex;flex-direction:column;align-items:center;gap:2px}
 .ctrl button{width:44px;min-height:38px;padding:0;font-size:1.2rem;font-weight:700;line-height:1}
 .coef{font-size:1.7rem;font-weight:800;min-width:1.4em;text-align:center;color:var(--accent)}
 .formula{font-size:1.6rem;font-weight:700;white-space:nowrap}
 .formula sub{font-size:.65em;vertical-align:baseline;position:relative;top:.3em}
-.op{font-size:1.5rem;font-weight:700;color:var(--muted)}
-.arrow{font-size:1.8rem;padding:0 4px}
+.op{font-size:1.5rem;font-weight:700;color:var(--muted);flex-shrink:0}
+.arrow{font-size:1.8rem;padding:0 4px;flex-shrink:0}
 .shake{animation:shake .35s}
 @keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 @media (prefers-reduced-motion:reduce){.shake{animation:none}}

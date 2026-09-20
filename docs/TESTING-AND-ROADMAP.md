@@ -48,11 +48,13 @@ Appearance and access
 - [ ] Dark mode (system setting): text readable, cards visible, atom colours distinguishable.
 - [ ] Keyboard: Tab reaches every button, focus ring visible, Enter/Space works.
 - [ ] `prefers-reduced-motion` on: no shake animation.
-- [ ] Phone width around 360 px: equation with 4 terms wraps cleanly; no horizontal page scroll.
-- [ ] The equation row is centered in its card, sized to its own content (not stretched to fill the card).
-  Different equations will naturally center at different horizontal positions since they have different
-  numbers/lengths of terms — that's expected. On a wrapped mobile line, a stranded `+`/term pair centers as a
-  unit instead of stretching to the far edges.
+- [ ] Phone width around 360 px: a wide equation (4-5 terms) never wraps to a second line. Instead the row
+  itself scrolls horizontally within its card (swipe on a touch device) and every term, including the last
+  one, is reachable. The page itself never gains a horizontal scrollbar — only the row inside the card does.
+- [ ] The equation row is centered in its card when it fits, sized to its own content (not stretched to fill
+  the card). Different equations will naturally center at different horizontal positions since they have
+  different numbers/lengths of terms — that's expected. When it doesn't fit, `justify-content: safe center`
+  falls back to left-aligned so the first term is never scrolled out of reach on the left.
 - [ ] Compare a term with no subscript (e.g. `Na`, `Al`) next to one with a subscript (e.g. `O₂`) in the same
   equation: their letters sit on the same line, and the `+` / `→` between terms lines up with those letters
   too — not higher or lower.
