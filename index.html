@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Баланс – игра с химични уравнения (3D)</title>
+<style>
+:root{
+  --bg:#f3f6f4; --card:#ffffff; --ink:#15231d; --muted:#5d6f66; --line:#d5ded9;
+  --accent:#0f766e; --accent-ink:#ffffff; --ok:#15803d; --ok-bg:#dcf5e4; --bad:#b91c1c; --bad-bg:#fde3e3; --warn-bg:#fff1cf;
+  --dot-stroke:rgba(0,0,0,.25);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1714; --card:#16231f; --ink:#e6f0eb; --muted:#94a9a0; --line:#2a3d36;
+    --accent:#2dd4bf; --accent-ink:#04211d; --ok:#4ade80; --ok-bg:#12341f; --bad:#f87171; --bad-bg:#3b1717; --warn-bg:#3a2f10;
+    --dot-stroke:rgba(255,255,255,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1714; --card:#16231f; --ink:#e6f0eb; --muted:#94a9a0; --line:#2a3d36;
+  --accent:#2dd4bf; --accent-ink:#04211d; --ok:#4ade80; --ok-bg:#12341f; --bad:#f87171; --bad-bg:#3b1717; --warn-bg:#3a2f10;
+  --dot-stroke:rgba(255,255,255,.3);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;line-height:1.45;min-height:100vh}
+.wrap{max-width:720px;margin:0 auto;padding:16px}
+h1{font-size:2rem;margin:0 0 4px;letter-spacing:-.02em}
+h2{font-size:1.15rem;margin:0 0 10px}
+.muted{color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 16px;min-height:44px}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+button:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px;font-size:.95rem}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-weight:700}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:14px}
+.bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.lvl{font-weight:700;color:var(--accent)}
+
+/* equation */
+.eq{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;gap:10px 6px}
+.term{display:flex;flex-direction:column;align-items:center;gap:2px}
+.ctrl{display:flex;flex-direction:column;align-items:center;gap:2px}
+.ctrl button{width:44px;min-height:38px;padding:0;font-size:1.2rem;font-weight:700;line-height:1}
+.coef{font-size:1.7rem;font-weight:800;min-width:1.4em;text-align:center;color:var(--accent)}
+.formula{font-size:1.6rem;font-weight:700;white-space:nowrap}
+.formula sub{font-size:.65em}
+.op{font-size:1.5rem;font-weight:700;color:var(--muted);padding-bottom:10px}
+.arrow{font-size:1.8rem;padding:0 4px 8px}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@media (prefers-reduced-motion:reduce){.shake{animation:none}}
+
+/* counter */
+.counter{width:100%;border-collapse:collapse}
+.counter th{font-size:.85rem;color:var(--muted);font-weight:600;text-align:left;padding:4px 6px}
+.counter td{padding:8px 6px;border-top:1px solid var(--line);vertical-align:middle}
+.counter td.num{font-weight:800;font-size:1.1rem;width:2.5em;text-align:center;border-radius:8px}
+.counter td.el{font-weight:800;width:3em}
+.counter td.st{width:2.2em;text-align:center;font-size:1.2rem}
+.eqok{background:var(--ok-bg);color:var(--ok)}
+.eqno{background:var(--bad-bg);color:var(--bad)}
+.dots{display:flex;flex-wrap:wrap;gap:3px}
+.dot{width:12px;height:12px;border-radius:50%;border:1px solid var(--dot-stroke)}
+
+.msg{border-radius:10px;padding:10px 14px;margin-top:10px;font-weight:600}
+.msg.ok{background:var(--ok-bg);color:var(--ok)}
+.msg.bad{background:var(--bad-bg);color:var(--bad)}
+.msg.warn{background:var(--warn-bg)}
+.science{margin-top:10px;padding:12px 14px;border-left:4px solid var(--accent);background:var(--bg);border-radius:0 10px 10px 0;font-size:.95rem}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.actions button{flex:1 1 140px}
+.big{font-size:3rem;font-weight:800;color:var(--accent);line-height:1}
+ul.wrong{padding-left:18px;margin:6px 0}
+
+/* 3D scene */
+.scene{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:640px){.scene{grid-template-columns:1fr 1fr}}
+.pane{border:2px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg);transition:border-color .2s}
+.pane.bal{border-color:var(--ok)}
+.pane h3{margin:0;padding:8px 12px 0;font-size:.9rem;color:var(--muted);font-weight:600}
+.pane .sum{padding:2px 12px 0;font-weight:700;min-height:1.5em}
+.pane .sum sub{font-size:.7em}
+.pane canvas{display:block;width:100%;height:220px;touch-action:pan-y;cursor:grab}
+.pane canvas:active{cursor:grabbing}
+.hint3d{font-size:.8rem;color:var(--muted);margin:8px 0 0}
+.chip{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:8px;vertical-align:-2px;border:1px solid var(--dot-stroke)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- START -->
+  <section id="start">
+    <div class="card">
+      <h1>Баланс</h1>
+      <p class="muted" style="margin-top:0">Игра за уравняване на химични уравнения</p>
+      <p>Уравнението е вярно, когато във всеки елемент броят атоми отляво е равен на броя атоми отдясно. Променяй коефициентите пред формулите, докато всички редове в таблицата станат зелени.</p>
+      <p class="muted">Уравненията са по темите от учебната програма за 7. клас: алкални метали и техните съединения, халогени, киселини и основи, карбонати. Металите и халогените се сменят случайно във всяка игра.</p>
+      <ul>
+        <li>12 уравнения в 3 нива. Всяко носи до 100 точки.</li>
+        <li>Грешна проверка: −10 точки.</li>
+        <li>Подсказка: −25 точки.</li>
+        <li>Коефициентите трябва да са най-малките възможни цели числа.</li>
+      </ul>
+      <div class="actions"><button class="primary" id="btnStart">Започни</button></div>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="hidden">
+    <div class="topbar">
+      <span class="lvl" id="lvlName"></span>
+      <span class="pill" id="scoreBox">Точки: 0</span>
+    </div>
+    <div class="bar"><i id="prog"></i></div>
+
+    <div class="card">
+      <div class="eq" id="eq" aria-label="Химично уравнение"></div>
+    </div>
+
+    <div class="card" id="card3d">
+      <h2>Атоми и молекули в 3D</h2>
+      <div class="scene">
+        <div class="pane" id="paneL"><h3>Реагенти</h3><div class="sum" id="sumL"></div><canvas id="cvL" aria-label="3D модел на реагентите"></canvas></div>
+        <div class="pane" id="paneR"><h3>Продукти</h3><div class="sum" id="sumR"></div><canvas id="cvR" aria-label="3D модел на продуктите"></canvas></div>
+      </div>
+      <p class="hint3d">Завърти модела с плъзгане. Рамката става зелена, когато двете страни имат едни и същи атоми.</p>
+    </div>
+
+    <div class="card">
+      <h2>Брой атоми</h2>
+      <table class="counter" id="counter"></table>
+    </div>
+
+    <div id="feedback"></div>
+
+    <div class="actions" id="gameActions">
+      <button id="btnHint">Подсказка (−25)</button>
+      <button class="primary" id="btnCheck">Провери</button>
+    </div>
+    <div class="actions hidden" id="nextActions">
+      <button class="primary" id="btnNext">Напред</button>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section id="end" class="hidden">
+    <div class="card" style="text-align:center">
+      <p class="muted" style="margin:0">Краен резултат</p>
+      <div class="big" id="finalScore">0</div>
+      <p class="muted" id="finalMax"></p>
+      <p id="grade" style="font-weight:700;font-size:1.1rem"></p>
+      <p class="muted" id="seedLbl" style="font-size:.85rem"></p>
+    </div>
+    <div class="card" id="wrongCard">
+      <h2>Уравнения, при които сгреши или ползва подсказка</h2>
+      <ul class="wrong" id="wrongList"></ul>
+    </div>
+    <div class="actions"><button class="primary" id="btnAgain">Играй отново</button></div>
+  </section>
+
+</div>
+
+<script src="vendor/three.min.js" onerror="var t=document.createElement('script');t.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';document.head.appendChild(t)"></script>
+<script>
+/* ---------- данни ---------- */
+const COLORS = {H:'#7dd3fc',O:'#ef4444',N:'#3b82f6',C:'#6b7280',F:'#86efac',Cl:'#22c55e',Br:'#92400e',I:'#7c3aed',
+  Li:'#c4b5fd',Na:'#f472b6',K:'#facc15',Rb:'#f97316',Cs:'#0d9488',Ag:'#cbd5e1',Ca:'#fb923c',Al:'#a78bfa',P:'#eab308',Hg:'#94a3b8',Fe:'#f59e0b',Mg:'#14b8a6'};
+
+const ALK = ['Li','Na','K','Rb','Cs'];          // алкални метали
+const HAL = ['F','Cl','Br','I'];                // халогени
+const ACT = {F:4,Cl:3,Br:2,I:1};                // активност на халогените
+const N_MET   = {Li:'литий',Na:'натрий',K:'калий',Rb:'рубидий',Cs:'цезий'};
+const N_ADJ   = {Li:'литиев',Na:'натриев',K:'калиев',Rb:'рубидиев',Cs:'цезиев'};
+const N_BASE  = {Li:'литиева',Na:'натриева',K:'калиева',Rb:'рубидиева',Cs:'цезиева'};
+const N_HAL   = {F:'флуор',Cl:'хлор',Br:'бром',I:'йод'};
+const N_HALIDE= {F:'флуорид',Cl:'хлорид',Br:'бромид',I:'йодид'};
+const N_HACID = {F:'флуороводород',Cl:'хлороводород',Br:'бромоводород',I:'йодоводород'};
+const AG_COLOR= {Cl:'бяла',Br:'бледожълта',I:'жълта'};
+const U = f => f.replace(/\d/g, d => '₀₁₂₃₄₅₆₇₈₉'[d]);   // Unicode подиндекси за текст
+
+const LEVELS = ['Ниво 1 – Съединяване и разлагане','Ниво 2 – Заместване и неутрализация','Ниво 3 – Хлор, карбонати и качествени реакции'];
+const PER_LEVEL = [4,4,4];
+
+/* Шаблони: {M} = алкален метал, {X}/{Y} = халоген. Коефициентите не зависят от избрания елемент.
+   vars: позволени стойности; ok: допълнително ограничение; note: обяснение след верен отговор. */
+const TEMPLATES = [
+  // ---- Ниво 1
+  {id:'m-o2', lvl:0, left:['{M}','O2'], right:['{M}2O'], sol:[4,1,2], vars:{M:ALK},
+   note:v=>`Реакция на съединяване: ${N_MET[v.M]} се окислява от кислорода и се получава ${N_ADJ[v.M]} оксид ${U(v.M+'2O')} – основен оксид. Така се записва на училищно ниво. В действителност само литият дава предимно оксид, а останалите алкални метали образуват и пероксиди или надпероксиди.`},
+  {id:'m-x2', lvl:0, left:['{M}','{X}2'], right:['{M}{X}'], sol:[2,1,2], vars:{M:ALK,X:HAL},
+   note:v=>`Реакция на съединяване: ${N_MET[v.M]} и ${N_HAL[v.X]} образуват сол – ${N_ADJ[v.M]} ${N_HALIDE[v.X]} (${v.M}${v.X}). И двата елемента са I валентни.`},
+  {id:'h2-x2', lvl:0, left:['H2','{X}2'], right:['H{X}'], sol:[1,1,2], vars:{X:HAL},
+   note:v=>`Реакция на съединяване: водород и ${N_HAL[v.X]} дават ${N_HACID[v.X]} (H${v.X}). Разтворен във вода, H${v.X} е киселина.`},
+  {id:'h2-o2', lvl:0, left:['H2','O2'], right:['H2O'], sol:[2,1,2],
+   note:()=>'Реакция на съединяване: водородът гори в кислорода и се образува вода. Атомите не изчезват и не се появяват отново – масата се запазва (закон на Лавоазие).'},
+  {id:'n2-h2', lvl:0, left:['N2','H2'], right:['NH3'], sol:[1,3,2],
+   note:()=>'Реакция на съединяване: от азот и водород се получава амоняк, в който азотът е III валентен. Амонякът е суровина за торове.'},
+  {id:'hgo', lvl:0, left:['HgO'], right:['Hg','O2'], sol:[2,2,1],
+   note:()=>'Реакция на разлагане: при нагряване живачният(II) оксид се разпада на живак и кислород. С такава реакция през 1774 г. Джоузеф Пристли получава кислород.'},
+  {id:'m2o-h2o', lvl:0, left:['{M}2O','H2O'], right:['{M}OH'], sol:[1,1,2], vars:{M:ALK},
+   note:v=>`Основният оксид ${U(v.M+'2O')} реагира с вода и дава основа – ${N_BASE[v.M]} основа ${v.M}OH. Разтворът е алкален.`},
+
+  // ---- Ниво 2
+  {id:'m-h2o', lvl:1, left:['{M}','H2O'], right:['{M}OH','H2'], sol:[2,2,2,1], vars:{M:ALK},
+   note:v=>`Реакция на заместване: ${N_MET[v.M]} измества водорода от водата и се получават ${N_BASE[v.M]} основа и водород. Колкото по-надолу в групата е металът, толкова по-бурна е реакцията. Опитът се прави само от учител.`},
+  {id:'moh-hx', lvl:1, left:['{M}OH','H{X}'], right:['{M}{X}','H2O'], sol:[1,1,1,1], vars:{M:ALK,X:HAL},
+   note:v=>`Неутрализация: основа + киселина → сол + вода. Солта е ${N_ADJ[v.M]} ${N_HALIDE[v.X]}.`},
+  {id:'m2o-hx', lvl:1, left:['{M}2O','H{X}'], right:['{M}{X}','H2O'], sol:[1,2,2,1], vars:{M:ALK,X:HAL},
+   note:v=>`Основен оксид + киселина → сол + вода. Получава се ${N_ADJ[v.M]} ${N_HALIDE[v.X]}.`},
+  {id:'al-o2', lvl:1, left:['Al','O2'], right:['Al2O3'], sol:[4,3,2],
+   note:()=>'Алуминият е III валентен. Върху повърхността му се образува тънък слой алуминиев оксид, който го пази от по-нататъшно окисляване.'},
+  {id:'p-o2', lvl:1, left:['P','O2'], right:['P2O5'], sol:[4,5,2],
+   note:()=>'Фосфорът гори с ярък пламък и се образува дифосфорен пентаоксид – фосфорът е V валентен.'},
+  {id:'al-hcl', lvl:1, left:['Al','HCl'], right:['AlCl3','H2'], sol:[2,6,2,3],
+   note:()=>'Реакция на заместване: алуминият измества водорода от солната киселина. Получава се алуминиев хлорид и водород (газ).'},
+  {id:'caoh2-hcl', lvl:1, left:['Ca(OH)2','HCl'], right:['CaCl2','H2O'], sol:[1,2,1,2],
+   note:()=>'Неутрализация: основа + киселина → сол + вода. В Ca(OH)₂ индексът 2 важи за цялата група OH.'},
+
+  // ---- Ниво 3
+  {id:'x2-h2o', lvl:2, left:['{X}2','H2O'], right:['H{X}','H{X}O'], sol:[1,1,1,1], vars:{X:['Cl','Br']},
+   note:v=>`${N_HAL[v.X][0].toUpperCase()+N_HAL[v.X].slice(1)}ът се разтваря във вода и частично реагира: получават се две киселини – H${v.X} и H${v.X}O.`+(v.X==='Cl'?' Киселината HClO обеззаразява, затова водата в басейните се хлорира.':'')},
+  {id:'x2-moh', lvl:2, left:['{X}2','{M}OH'], right:['{M}{X}','{M}{X}O','H2O'], sol:[1,2,1,1,1], vars:{M:ALK,X:['Cl','Br']},
+   note:v=>`Халогенът реагира с основа и образува сол на две киселини: ${v.M}${v.X} и ${v.M}${v.X}O.`+(v.X==='Cl'&&v.M==='Na'?' NaClO е основата на белина.':'')},
+  {id:'moh-co2', lvl:2, left:['{M}OH','CO2'], right:['{M}2CO3','H2O'], sol:[2,1,1,1], vars:{M:ALK},
+   note:v=>`Основа + киселинен оксид → сол + вода. Получава се ${N_ADJ[v.M]} карбонат ${U(v.M+'2CO3')}. Внимание: формулата е ${U(v.M+'2CO3')}, не ${v.M}CO₃ – металът е I валентен, а групата CO₃ е II валентна.`},
+  {id:'m2o-co2', lvl:2, left:['{M}2O','CO2'], right:['{M}2CO3'], sol:[1,1,1], vars:{M:ALK},
+   note:v=>`Основен оксид + киселинен оксид → сол: ${N_ADJ[v.M]} карбонат ${U(v.M+'2CO3')}.`},
+  {id:'moh-co2-hc', lvl:2, left:['{M}OH','CO2'], right:['{M}HCO3'], sol:[1,1,1], vars:{M:['Na','K']},
+   note:v=>`При излишък на CO₂ се получава хидрогенкарбонат ${v.M}HCO₃.`+(v.M==='Na'?' NaHCO₃ е содата за хляб.':'')},
+  {id:'mhco3', lvl:2, left:['{M}HCO3'], right:['{M}2CO3','H2O','CO2'], sol:[2,1,1,1], vars:{M:['Na','K']},
+   note:v=>`Реакция на разлагане при нагряване: хидрогенкарбонатът се разпада на карбонат, вода и CO₂.`+(v.M==='Na'?' Затова содата за хляб „повдига“ тестото: CO₂ образува мехурчета.':'')},
+  {id:'m2co3-hx', lvl:2, left:['{M}2CO3','H{X}'], right:['{M}{X}','H2O','CO2'], sol:[1,2,2,1,1], vars:{M:ALK,X:HAL},
+   note:v=>`Карбонатите реагират с киселини и отделят CO₂ (газ, пяна). Получава се ${N_ADJ[v.M]} ${N_HALIDE[v.X]}.`},
+  {id:'agno3-hx', lvl:2, left:['AgNO3','H{X}'], right:['Ag{X}','HNO3'], sol:[1,1,1,1], vars:{X:['Cl','Br','I']},
+   note:v=>`Качествена реакция за халогенидни йони: получава се ${AG_COLOR[v.X]} утайка от Ag${v.X}.`},
+  {id:'agno3-mx', lvl:2, left:['AgNO3','{M}{X}'], right:['Ag{X}','{M}NO3'], sol:[1,1,1,1], vars:{M:ALK,X:['Cl','Br','I']},
+   note:v=>`Качествена реакция за халогениди: Ag${v.X} се отделя като ${AG_COLOR[v.X]} утайка, а ${N_ADJ[v.M]} нитрат остава в разтвора.`},
+  {id:'x2-my', lvl:2, left:['{X}2','{M}{Y}'], right:['{M}{X}','{Y}2'], sol:[1,2,2,1], vars:{M:ALK,X:['Cl','Br'],Y:['Br','I']}, ok:v=>ACT[v.X]>ACT[v.Y],
+   note:v=>`Реакция на заместване между халогени: по-активният ${N_HAL[v.X]} измества ${N_HAL[v.Y]} от неговата сол. Активността намалява надолу в групата, затова обратната реакция не протича.`}
+];
+
+const MAXC = 10;
+
+/* ---------- помощни ---------- */
+function parse(f){
+  let i=0;
+  function num(){let t='';while(i<f.length&&/\d/.test(f[i]))t+=f[i++];return t?+t:1;}
+  function grp(){
+    const o={};
+    while(i<f.length){
+      const c=f[i];
+      if(c==='('){i++;const inner=grp();const n=num();for(const k in inner)o[k]=(o[k]||0)+inner[k]*n;}
+      else if(c===')'){i++;return o;}
+      else{let el=c;i++;if(i<f.length&&/[a-z]/.test(f[i]))el+=f[i++];const n=num();o[el]=(o[el]||0)+n;}
+    }
+    return o;
+  }
+  return grp();
+}
+function pretty(f){ return f.replace(/(\d+)/g,'<sub>$1</sub>'); }
+function eqText(e){
+  const side=(arr,off)=>arr.map((f,i)=>(e.sol[off+i]>1?e.sol[off+i]:'')+f.replace(/(\d+)/g,d=>[...d].map(c=>'₀₁₂₃₄₅₆₇₈₉'[c]).join(''))).join(' + ');
+  return side(e.left,0)+' → '+side(e.right,e.left.length);
+}
+const $ = id => document.getElementById(id);
+
+
+/* ---------- генератор на игра ---------- */
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function shuffle(arr,r){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(r()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function enumerate(t){                              // всички допустими замествания за шаблона
+  let combos=[{}];
+  for(const k in (t.vars||{})){
+    const next=[]; combos.forEach(c=>t.vars[k].forEach(val=>next.push({...c,[k]:val}))); combos=next;
+  }
+  return t.ok ? combos.filter(t.ok) : combos;
+}
+function instantiate(t,v){
+  const sub=f=>f.replace(/\{(\w)\}/g,(_,k)=>v[k]);
+  return {id:t.id,lvl:t.lvl,left:t.left.map(sub),right:t.right.map(sub),sol:t.sol.slice(),note:t.note(v),vars:v};
+}
+function generateSet(seed){
+  const r=mulberry32(seed), out=[];
+  for(let lvl=0;lvl<PER_LEVEL.length;lvl++){
+    const pool=TEMPLATES.filter(t=>t.lvl===lvl);
+    let picked=shuffle(pool.filter(t=>t.sol.some(c=>c>1)),r).slice(0,2);   // поне 2 „истински“ уравнения
+    const rest=shuffle(pool.filter(t=>!picked.includes(t)),r);
+    picked=picked.concat(rest.slice(0,PER_LEVEL[lvl]-picked.length));
+    shuffle(picked,r).forEach(t=>{ const c=enumerate(t); out.push(instantiate(t,c[Math.floor(r()*c.length)])); });
+  }
+  return out;
+}
+
+let EQS = [];
+
+/* ---------- състояние ---------- */
+let idx, coefs, score, mistakes, hints, solved, wrong, earnedNow;
+
+function show(id){ ['start','game','end'].forEach(s=>$(s).classList.toggle('hidden',s!==id)); window.scrollTo(0,0); }
+
+let seedBase=(()=>{ const n=parseInt(new URLSearchParams(location.search).get('seed'),10); return Number.isFinite(n)?n:null; })();
+let gameNo=0, currentSeed=0;
+function nextSeed(){ const sd = seedBase!==null ? seedBase+gameNo : Math.floor(Math.random()*1e6); gameNo++; return sd; }
+
+function startGame(){
+  currentSeed=nextSeed(); EQS=generateSet(currentSeed);
+  idx=0; score=0; wrong=[];
+  show('game'); loadEq();
+}
+
+function loadEq(){
+  const e=EQS[idx];
+  coefs=e.sol.map(()=>1);
+  mistakes=0; hints=0; solved=false;
+  $('lvlName').textContent=LEVELS[e.lvl]+'  ('+(idx+1)+'/'+EQS.length+')';
+  $('prog').style.width=(idx/EQS.length*100)+'%';
+  $('feedback').innerHTML='';
+  $('gameActions').classList.remove('hidden');
+  $('nextActions').classList.add('hidden');
+  $('btnNext').textContent = idx===EQS.length-1 ? 'Виж резултата' : 'Напред';
+  updateScore();
+  render();
+}
+
+function updateScore(){
+  const pot=solved?0:Math.max(0,100-hints*25-mistakes*10);
+  $('scoreBox').textContent='Точки: '+score+(solved?'':'  (+'+pot+')');
+}
+
+/* ---------- рендериране ---------- */
+function render(){
+  const e=EQS[idx];
+  const all=[...e.left,...e.right];
+  let html='';
+  all.forEach((f,i)=>{
+    if(i===e.left.length) html+='<div class="arrow" aria-hidden="true">→</div>';
+    else if(i>0) html+='<div class="op" aria-hidden="true">+</div>';
+    html+=`<div class="term">
+      <div class="ctrl">
+        <button data-i="${i}" data-d="1" aria-label="Увеличи коефициента на ${f}" ${solved?'disabled':''}>+</button>
+        <div class="coef" aria-live="polite">${coefs[i]}</div>
+        <button data-i="${i}" data-d="-1" aria-label="Намали коефициента на ${f}" ${solved?'disabled':''}>−</button>
+      </div>
+      <div class="formula">${pretty(f)}</div>
+    </div>`;
+  });
+  $('eq').innerHTML=html;
+  $('eq').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i, d=+b.dataset.d;
+    coefs[i]=Math.min(MAXC,Math.max(1,coefs[i]+d));
+    if($('feedback').firstChild && !solved) $('feedback').innerHTML='';
+    render();
+  });
+  renderCounter();
+  update3D();
+}
+
+function totals(){
+  const e=EQS[idx], L={}, R={};
+  e.left.forEach((f,i)=>{const p=parse(f);for(const k in p)L[k]=(L[k]||0)+p[k]*coefs[i];});
+  e.right.forEach((f,i)=>{const p=parse(f);for(const k in p)R[k]=(R[k]||0)+p[k]*coefs[e.left.length+i];});
+  const els=[...new Set([...Object.keys(L),...Object.keys(R)])];
+  return {L,R,els};
+}
+
+function renderCounter(){
+  const {L,R,els}=totals();
+  let h='<tr><th>Елемент</th><th>Отляво</th><th>Отдясно</th><th></th></tr>';
+  els.forEach(el=>{
+    const l=L[el]||0, r=R[el]||0, ok=l===r;
+    h+=`<tr>
+      <td class="el"><span class="chip" style="background:${COLORS[el]||'#999'}"></span>${el}</td>
+      <td class="num ${ok?'eqok':'eqno'}">${l}</td>
+      <td class="num ${ok?'eqok':'eqno'}">${r}</td>
+      <td class="st" aria-label="${ok?'равно':'различно'}">${ok?'=':'≠'}</td>
+    </tr>`;
+  });
+  $('counter').innerHTML=h;
+}
+
+/* ---------- логика ---------- */
+function isBalanced(){
+  const {L,R,els}=totals();
+  return els.every(el=>L[el]===R[el]);
+}
+function gcd(a,b){return b?gcd(b,a%b):a;}
+function isSimplest(){ return coefs.reduce(gcd)===1; }
+
+function check(){
+  const e=EQS[idx];
+  const fb=$('feedback');
+  if(!isBalanced()){
+    mistakes++;
+    updateScore();
+    fb.innerHTML='<div class="msg bad">Не е уравнено. Червените редове показват къде броят атоми е различен. (−10 от точките за това уравнение)</div>';
+    $('eq').classList.remove('shake'); void $('eq').offsetWidth; $('eq').classList.add('shake');
+    return;
+  }
+  if(!isSimplest()){
+    fb.innerHTML='<div class="msg warn">Атомите са равни, но коефициентите могат да се разделят на общо число. Намери най-малките цели числа.</div>';
+    return;
+  }
+  // вярно
+  solved=true;
+  const pts=Math.max(0,100-hints*25-mistakes*10);
+  score+=pts;
+  fb.innerHTML=`<div class="msg ok">Вярно! +${pts} точки за това уравнение.</div>
+    <div class="science"><b>Какво се случва:</b> ${e.note}</div>`;
+  if(mistakes>0||hints>0) wrong.push(eqText(e));
+  $('gameActions').classList.add('hidden');
+  $('nextActions').classList.remove('hidden');
+  updateScore();
+  render();
+}
+
+function hint(){
+  const e=EQS[idx];
+  const i=coefs.findIndex((c,k)=>c!==e.sol[k]);
+  if(i<0) return;
+  coefs[i]=e.sol[i];
+  hints++;
+  updateScore();
+  $('feedback').innerHTML=`<div class="msg warn">Подсказка: коефициентът пред ${pretty(([...e.left,...e.right])[i])} е ${e.sol[i]}. (−25 от точките за това уравнение)</div>`;
+  render();
+}
+
+function next(){
+  idx++;
+  if(idx>=EQS.length) return finish();
+  loadEq();
+}
+
+function finish(){
+  $('prog').style.width='100%';
+  $('finalScore').textContent=score;
+  const max=EQS.length*100;
+  $('finalMax').textContent='от възможни '+max;
+  const p=score/max;
+  $('grade').textContent = p>=.9?'Отлично! Разбираш закона за запазване на масата.':p>=.65?'Добре! Още малко упражнение.':'Опитай пак – започни от най-простите уравнения.';
+  const wl=$('wrongList'); wl.innerHTML='';
+  $('wrongCard').classList.toggle('hidden',wrong.length===0);
+  wrong.forEach(t=>{const li=document.createElement('li');li.textContent=t;wl.appendChild(li);});
+  $('seedLbl').textContent='Вариант #'+currentSeed+' (добави ?seed='+currentSeed+' към адреса, за да повториш същите уравнения)';
+  show('end');
+}
+
+/* ---------- 3D (three.js) ---------- */
+const S = 1.6;                       // мащаб на координатите
+const REDUCE = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const RAD = {H:.28,O:.42,N:.42,C:.45,F:.38,Cl:.55,Br:.65,I:.78,Li:.45,Na:.6,K:.75,Rb:.85,Cs:.95,Ag:.7,Ca:.65,Al:.55,P:.5,Hg:.65,Fe:.6,Mg:.55};
+
+/* Форми. a: атоми [елемент,x,y,z]; b: връзки [i,j,ред]. Стилизирани, не точни, геометрии.
+   M = алкален метал, X = халоген: конкретният елемент се подставя от формулата (виж shapeOf).
+   Разстоянията се мащабират автоматично според радиусите (prepMol). */
+const nitrate = (m,len) => ({a:[['N',0,0,0],['O',-1.05,-.55,0],['O',0,1.15,0],['O',1.05,-.55,0],[m,-1.05-len*.95,-.55+len*.3,0]],
+                             b:[[0,1,1],[0,2,2],[0,3,2],[1,4,1]]});
+const carbonate = (m1,m2,l1,l2) => ({a:[['C',0,0,0],['O',0,1.15,0],['O',-1,-.6,0],['O',1,-.6,0],[m1,-1-l1,-.6+l1*.25,0],[m2,1+l2,-.6+l2*.25,0]],
+                                      b:[[0,1,2],[0,2,1],[0,3,1],[2,4,1],[3,5,1]]});
+const SHAPES = {
+  'H2':{a:[['H',-.4,0,0],['H',.4,0,0]],b:[[0,1,1]]},
+  'O2':{a:[['O',-.62,0,0],['O',.62,0,0]],b:[[0,1,2]]},
+  'N2':{a:[['N',-.6,0,0],['N',.6,0,0]],b:[[0,1,3]]},
+  'X2':{a:[['X',-.75,0,0],['X',.75,0,0]],b:[[0,1,1]]},
+  'H2O':{a:[['O',0,0,0],['H',.78,.6,0],['H',-.78,.6,0]],b:[[0,1,1],[0,2,1]]},
+  'NH3':{a:[['N',0,0,0],['H',.9,-.3,0],['H',-.45,-.3,.78],['H',-.45,-.3,-.78]],b:[[0,1,1],[0,2,1],[0,3,1]]},
+  'HX':{a:[['H',-.55,0,0],['X',.55,0,0]],b:[[0,1,1]]},
+  'MX':{a:[['M',-.8,0,0],['X',.8,0,0]],b:[[0,1,1]]},
+  'M2O':{a:[['O',0,-.1,0],['M',1,.75,0],['M',-1,.75,0]],b:[[0,1,1],[0,2,1]]},
+  'MOH':{a:[['M',-1.05,-.2,0],['O',0,0,0],['H',.6,.55,0]],b:[[0,1,1],[1,2,1]]},
+  'HXO':{a:[['H',-.6,.55,0],['O',0,0,0],['X',1.0,-.25,0]],b:[[0,1,1],[1,2,1]]},
+  'MXO':{a:[['M',-1.05,-.2,0],['O',0,0,0],['X',1.05,-.3,0]],b:[[0,1,1],[1,2,1]]},
+  'CO2':{a:[['O',-1.2,0,0],['C',0,0,0],['O',1.2,0,0]],b:[[0,1,2],[1,2,2]]},
+  'M2CO3':carbonate('M','M',1.2,1.2),
+  'MHCO3':carbonate('M','H',1.2,.8),
+  'AgX':{a:[['Ag',-.9,0,0],['X',.9,0,0]],b:[[0,1,1]]},
+  'AgNO3':nitrate('Ag',1.2),
+  'MNO3':nitrate('M',1.2),
+  'HNO3':nitrate('H',.75),
+  'HgO':{a:[['Hg',-.7,0,0],['O',.7,0,0]],b:[[0,1,2]]},
+  'Ca(OH)2':{a:[['Ca',0,0,0],['O',1,.25,0],['H',1.5,.8,0],['O',-1,.25,0],['H',-1.5,.8,0]],b:[[0,1,1],[1,2,1],[0,3,1],[3,4,1]]},
+  'CaX2':{a:[['Ca',0,0,0],['X',1.15,0,0],['X',-1.15,0,0]],b:[[0,1,1],[0,2,1]]},
+  'AlX3':{a:[['Al',0,0,0],['X',1.1,0,0],['X',-.55,.95,0],['X',-.55,-.95,0]],b:[[0,1,1],[0,2,1],[0,3,1]]},
+  'Al2O3':{a:[['Al',-1,0,0],['Al',1,0,0],['O',0,.95,0],['O',0,-.5,.9],['O',0,-.5,-.9]],b:[[0,2,1],[1,2,1],[0,3,1],[1,3,1],[0,4,1],[1,4,1]]},
+  'P2O5':{a:[['P',-.9,0,0],['P',.9,0,0],['O',0,.45,0],['O',-1.55,.9,.4],['O',-1.55,-.75,-.5],['O',1.55,.9,.4],['O',1.55,-.75,-.5]],
+          b:[[0,2,1],[1,2,1],[0,3,2],[0,4,2],[1,5,2],[1,6,2]]},
+  'M':{a:[['M',0,0,0]],b:[]},
+  'Hg':{a:[['Hg',0,0,0]],b:[]},
+  'Al':{a:[['Al',0,0,0]],b:[]},
+  'P':{a:[['P',0,0,0]],b:[]}
+};
+// Намира форма за формула: първо точно съвпадение, иначе заменя алкален метал с M и халоген с X.
+// Връща {def, map} – map казва кой реален елемент стои на мястото на M и X.
+function shapeOf(f){
+  const map={};
+  const key=f.replace(/[A-Z][a-z]?/g, el => { if(ALK.includes(el)){ map.M=el; return 'M'; } if(HAL.includes(el)){ map.X=el; return 'X'; } return el; });
+  return {def:SHAPES[f]||SHAPES[key], map, key};
+}
+
+const _prep={}, _geo={}, _mat={};
+function prepMol(f){
+  if(_prep[f]) return _prep[f];
+  const {def,map}=shapeOf(f); if(!def) throw new Error('Няма 3D модел за '+f);
+  const els=def.a.map(a=>map[a[0]]||a[0]);
+  const c=def.a.reduce((v,a)=>[v[0]+a[1],v[1]+a[2],v[2]+a[3]],[0,0,0]).map(x=>x/def.a.length);
+  const pts=def.a.map(a=>new THREE.Vector3((a[1]-c[0])*S,(a[2]-c[1])*S,(a[3]-c[2])*S));
+  // мащаб: всяка връзка да е поне (сума на радиусите + 0.5), но не повече от 25% свиване
+  let k=.75;
+  def.b.forEach(([i,j])=>{ k=Math.max(k,(RAD[els[i]]+RAD[els[j]]+.5)/pts[i].distanceTo(pts[j])); });
+  pts.forEach(p=>p.multiplyScalar(k));
+  const atoms=pts.map((p,i)=>({el:els[i],p}));
+  const r=Math.max(...atoms.map(a=>a.p.length()+RAD[a.el]));
+  return _prep[f]={atoms,bonds:def.b,r};
+}
+function sphereGeo(el){ return _geo[el]||(_geo[el]=new THREE.SphereGeometry(RAD[el],24,16)); }
+function atomMat(el){ return _mat[el]||(_mat[el]=new THREE.MeshStandardMaterial({color:new THREE.Color(COLORS[el]||'#999999'),roughness:.45,metalness:.05})); }
+let _bondGeo=null,_bondMat=null;
+function buildMol(f){
+  if(!_bondGeo){ _bondGeo=new THREE.CylinderGeometry(.07,.07,1,10); _bondMat=new THREE.MeshStandardMaterial({color:0x9aa5a0,roughness:.6}); }
+  const m=prepMol(f), g=new THREE.Group(), up=new THREE.Vector3(0,1,0);
+  m.atoms.forEach(a=>{ const s=new THREE.Mesh(sphereGeo(a.el),atomMat(a.el)); s.position.copy(a.p); g.add(s); });
+  m.bonds.forEach(([i,j,o])=>{
+    const p1=m.atoms[i].p, p2=m.atoms[j].p;
+    const dir=new THREE.Vector3().subVectors(p2,p1), L=dir.length(); dir.normalize();
+    const side=new THREE.Vector3().crossVectors(dir,Math.abs(dir.y)>.9?new THREE.Vector3(1,0,0):up).normalize();
+    (o===1?[0]:o===2?[-.11,.11]:[-.2,0,.2]).forEach(off=>{
+      const c=new THREE.Mesh(_bondGeo,_bondMat);
+      c.scale.set(1,L,1);
+      c.position.copy(p1).add(p2).multiplyScalar(.5).addScaledVector(side,off);
+      c.quaternion.setFromUnitVectors(up,dir);
+      g.add(c);
+    });
+  });
+  return g;
+}
+function rnd(i){ const x=Math.sin(i*127.1+311.7)*43758.5453; return x-Math.floor(x); }
+
+class Viewer{
+  constructor(canvas){
+    this.canvas=canvas; this.items=[]; this.mols=[]; this.t=0; this.rx=.15; this.ry=.4; this.drag=false;
+    this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+    this.scene=new THREE.Scene();
+    this.camera=new THREE.PerspectiveCamera(40,1.4,.1,300);
+    this.scene.add(new THREE.AmbientLight(0xffffff,.7));
+    const d=new THREE.DirectionalLight(0xffffff,.9); d.position.set(5,8,10); this.scene.add(d);
+    this.root=new THREE.Group(); this.scene.add(this.root);
+    canvas.addEventListener('pointerdown',e=>{ this.drag=true; this.lx=e.clientX; this.ly=e.clientY; canvas.setPointerCapture(e.pointerId); });
+    canvas.addEventListener('pointermove',e=>{
+      if(!this.drag) return;
+      const dx=e.clientX-this.lx, dy=e.clientY-this.ly; this.lx=e.clientX; this.ly=e.clientY;
+      this.ry+=dx*.01;
+      if(e.pointerType==='mouse') this.rx=Math.max(-1.2,Math.min(1.2,this.rx+dy*.01));
+    });
+    ['pointerup','pointercancel'].forEach(ev=>canvas.addEventListener(ev,()=>{ this.drag=false; }));
+    new ResizeObserver(()=>this.resize()).observe(canvas);
+  }
+  resize(){
+    const w=this.canvas.clientWidth, h=this.canvas.clientHeight;
+    if(!w||!h) return;
+    this.renderer.setSize(w,h,false);
+    this.camera.aspect=w/h; this.camera.updateProjectionMatrix();
+    this.rebuild();
+  }
+  setItems(items){ this.items=items; this.rebuild(); }
+  rebuild(){
+    while(this.root.children.length) this.root.remove(this.root.children[0]);
+    this.mols=[];
+    const list=[]; this.items.forEach(it=>{ for(let k=0;k<it.count;k++) list.push(it.formula); });
+    const n=list.length; if(!n) return;
+    let maxR=0; list.forEach(f=>{ maxR=Math.max(maxR,prepMol(f).r); });
+    const sp=maxR*2+.5, asp=this.camera.aspect;
+    const cols=Math.max(1,Math.min(n,Math.round(Math.sqrt(n*asp)))), rows=Math.ceil(n/cols);
+    list.forEach((f,i)=>{
+      const g=buildMol(f), r=Math.floor(i/cols), c=i%cols;
+      const inRow = r===rows-1 ? n-r*cols : cols;
+      g.position.set((c-(inRow-1)/2)*sp, -(r-(rows-1)/2)*sp, 0);
+      g.rotation.set(rnd(i)*6.283,rnd(i+50)*6.283,0);
+      g.userData={by:g.position.y,ph:rnd(i+9)*6.283,spin:.25+rnd(i+3)*.35};
+      this.root.add(g); this.mols.push(g);
+    });
+    const t=Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2));
+    const dist=Math.max(rows*sp/2/t, cols*sp/2/(t*asp))*1.15+maxR;
+    this.camera.position.set(0,0,dist); this.camera.lookAt(0,0,0);
+  }
+  frame(dt){
+    if(this.canvas.offsetParent===null) return;   // скрит
+    this.t+=dt;
+    if(!REDUCE){
+      if(!this.drag) this.ry+=dt*.25;
+      this.mols.forEach(g=>{ g.rotation.y+=dt*g.userData.spin; g.position.y=g.userData.by+Math.sin(this.t*1.2+g.userData.ph)*.1; });
+    }
+    this.root.rotation.set(this.rx,this.ry,0);
+    this.renderer.render(this.scene,this.camera);
+  }
+}
+
+let VL=null, VR=null, _last=0;
+function loop(t){
+  requestAnimationFrame(loop);
+  const dt=Math.min(.05,(t-_last)/1000); _last=t;
+  if(VL) VL.frame(dt); if(VR) VR.frame(dt);
+}
+function update3D(){
+  if(!VL||!VR||idx===undefined||!coefs) return;
+  const e=EQS[idx]; if(!e) return;
+  const mk=(arr,off)=>arr.map((f,i)=>({formula:f,count:coefs[off+i]}));
+  const L=mk(e.left,0), R=mk(e.right,e.left.length);
+  VL.setItems(L); VR.setItems(R);
+  const txt=a=>a.map(x=>(x.count>1?x.count+' ':'')+pretty(x.formula)).join(' + ');
+  $('sumL').innerHTML=txt(L); $('sumR').innerHTML=txt(R);
+  const bal=isBalanced();
+  $('paneL').classList.toggle('bal',bal); $('paneR').classList.toggle('bal',bal);
+}
+function init3D(){
+  const off=()=>{ $('card3d').classList.add('hidden'); VL=VR=null; };
+  if(typeof THREE==='undefined'){ off(); return; }
+  try{ VL=new Viewer($('cvL')); VR=new Viewer($('cvR')); }
+  catch(err){ console.warn('WebGL не е наличен:',err); off(); return; }
+  requestAnimationFrame(loop);
+  update3D();
+}
+window.addEventListener('load',init3D);
+
+$('btnStart').onclick=startGame;
+$('btnAgain').onclick=startGame;
+$('btnCheck').onclick=check;
+$('btnHint').onclick=hint;
+$('btnNext').onclick=next;
+</script>
+</body>
+</html>
