@@ -26,8 +26,9 @@ gets a random seed, and the end screen shows it.
 
 ## How to play
 
-- Press **+** / **−** above each formula to change its coefficient (1–10).
-- The table shows atom counts left vs right (green = equal, red = different) with a proportional bar per side.
+- Every equation starts with every coefficient at 0 — press **+** / **−** above each formula to set it (0–10).
+- The table shows atom counts left vs right: grey rows are elements you haven't set a coefficient for yet,
+  green = equal, red = different, each with a proportional bar per side.
 - **Провери** checks the answer. **Подсказка** fixes one wrong coefficient.
 - Coefficients must be the smallest whole numbers (2, 2, 4 is rejected even though it balances).
 - Score: max 100 per equation, −10 per wrong check, −25 per hint. Max 1200.

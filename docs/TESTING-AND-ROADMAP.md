@@ -24,18 +24,21 @@ Load
   name (e.g. "play_arrow Започни") instead of a glyph — ugly, not broken. Rename it back.
 
 Gameplay
-- [ ] Open `index.html?seed=42`. First equation is `4Na + O₂ → 2Na₂O`. Press + on Na twice → the coefficient
-  shows 3 and the Na row updates.
+- [ ] Open `index.html?seed=42`. First equation is `4Na + O₂ → 2Na₂O`, all three coefficients start at 0 and
+  every row in the table is grey. Press *Провери* immediately: red message ("не е уравнено"), no green rows yet.
+- [ ] Press + on Na twice → coefficient shows 2, the Na row switches from grey to red (2 vs 2Na₂O's 4, still
+  unequal) since the other terms are still 0.
 - [ ] Reach 4, 1, 2: table all green.
+- [ ] Press − on a coefficient already at 0: stays at 0 (no negative numbers).
 - [ ] Open `index.html?seed=42` again: same 12 equations. Play again from the end screen: different equations, seed shown.
 - [ ] Open the page twice without a seed: different sets.
 - [ ] *Провери* with wrong coefficients: red message, shake, potential points drop by 10.
 - [ ] Set 4, 2, 4 for H₂ + O₂ → H₂O: message says balanced but not smallest numbers, no penalty.
-- [ ] *Подсказка*: fixes one coefficient, potential drops by 25.
+- [ ] *Подсказка*: fixes one coefficient (from 0 or from a wrong value), potential drops by 25.
 - [ ] Correct answer: green message, science note, +points, buttons locked, *Напред* appears.
-- [ ] An equation whose solution is already 1/1/1 (e.g. `M₂O + CO₂ → M₂CO₃`, `MOH + HX → MX + H₂O`): loads
-  already green, *Провери* immediately scores full points, *Подсказка* shows an "already correct" message
-  instead of doing nothing.
+- [ ] An equation whose solution is all 1s (e.g. `M₂O + CO₂ → M₂CO₃`, `MOH + HX → MX + H₂O`): still starts at
+  0/0/0 (grey table, not a free win) — you must press + once per term to reach 1/1/1. If you do that by hand and
+  then press *Подсказка* anyway, it shows an "already correct" message instead of doing nothing.
 - [ ] Scroll down before pressing *Напред* (or after the last equation): the next equation, or the end screen,
   loads scrolled to the top.
 - [ ] Play all 12 equations of a few different seeds. Check especially: 2HgO, Al₂O₃, P₂O₅, Ca(OH)₂, carbonates (M₂CO₃, MHCO₃), AgNO₃, HClO / MClO.
@@ -52,12 +55,12 @@ Appearance and access
 ## Known gaps
 
 - The full manual checklist above has still not been run end-to-end by a person. Checked so far with headless
-  Chromium screenshots: the atom-count table (unbalanced/balanced states, a multi-element equation, light and
-  dark mode); the Material Icons font and score redesign (start screen, a wrong check, an already-1/1/1
-  equation including the *Подсказка* no-op message, the solved state, both end-screen grade tiers, dark mode);
-  the scroll-to-top fix on *Напред*. Still need a real device/browser pass: keyboard navigation and
-  phone-width layout.
-- Coefficients are capped at 10 and cannot go below 1.
+  Chromium screenshots: the atom-count table (grey/pending, unbalanced, balanced states, a multi-element
+  equation, light and dark mode); the Material Icons font and score redesign (start screen, a wrong check, an
+  already-solved-by-hand equation including the *Подсказка* no-op message, the solved state, both end-screen
+  grade tiers, dark mode); the scroll-to-top fix on *Напред*. Still need a real device/browser pass: keyboard
+  navigation and phone-width layout.
+- Coefficients are capped at 10 and cannot go below 0.
 - Colour is the only element label in the atom-count table's chip; teal (Cs) and green (Cl) or lavender (Li)
   and violet (I) may look close on some screens — the element symbol text next to each chip is the fallback.
 - Halogen displacement, MOH + CO₂ and M₂O + HX are not confirmed for 7th grade (see `docs/CURRICULUM.md`).

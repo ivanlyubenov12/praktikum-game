@@ -59,7 +59,7 @@ Globals: `let EQS, idx, coefs, score, mistakes, hints, solved, wrong, currentSee
 |---|---|
 | `EQS` | The 12 concrete equations of the current game |
 | `idx` | Current equation index in `EQS` |
-| `coefs` | Current player coefficients (same order as `sol`), each 1..`MAXC` (10) |
+| `coefs` | Current player coefficients (same order as `sol`), each 0..`MAXC` (10); every equation starts all-0 |
 | `score` | Total points from solved equations only |
 | `mistakes` / `hints` | Wrong checks / hints used on the current equation |
 | `solved` | Current equation solved (locks +/− buttons) |
@@ -75,13 +75,15 @@ startGame → generateSet → loadEq (scrolls to top) → render (→ renderCoun
         balanced, not gcd 1 → warning, no penalty
         balanced + simplest → solved, score += max(0, 100 - 25*hints - 10*mistakes), show note
    Подсказка → hint(): set first wrong coefficient to the correct value, hints++;
-                        if every coefficient is already correct (e.g. a template whose sol is all 1s),
-                        show an "already correct" message instead of doing nothing
+                        if every coefficient already matches sol (only possible by setting them all by
+                        hand — coefs start at 0, sol is never 0), show an "already correct" message
+                        instead of doing nothing
    Напред → next() → loadEq or finish()
 ```
 
 `totals()` sums atoms per element on each side (`coefficient × parse(formula)`).
-`isBalanced()` compares all elements. `isSimplest()` checks `gcd(coefs) === 1`.
+`isBalanced()` requires every coefficient to be ≥ 1 (a 0 means "not answered yet", never "balanced") and all
+elements to match. `isSimplest()` checks `gcd(coefs) === 1`.
 The header pill (`#scoreVal` + `#potBadge`) shows the running score plus the current equation's potential as a
 separate badge; the badge hides once the equation is `solved`. The potential drops with each mistake or hint but
 is only added to `score` when the equation is solved.
@@ -89,8 +91,9 @@ is only added to `score` when the equation is solved.
 ## Rendering
 
 `render()` rebuilds the equation row (buttons + formulas), then `renderCounter()` (atom-count rows, each with a
-colour chip, a proportional bar per side and a ✓/✗ badge). It re-creates DOM on every click; that is fine at
-this size.
+colour chip, a proportional bar per side and a badge). A row is grey/"—" (`row-pending`) while both sides sum
+to 0 for that element (nothing entered yet on either side), green/✓ once both sides match, red/✗ otherwise.
+It re-creates DOM on every click; that is fine at this size.
 
 ## Theming and accessibility
 
