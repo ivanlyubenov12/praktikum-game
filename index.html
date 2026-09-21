@@ -131,9 +131,16 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .actions button{flex:1 1 140px}
 .big{font-size:3rem;font-weight:800;color:var(--accent);line-height:1}
 ul.wrong{padding-left:18px;margin:6px 0}
-.rules{list-style:none;padding-left:0;margin:10px 0}
-.rules li{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
-.rules .material-icons{color:var(--accent);margin-top:.1em}
+.herohead{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.herohead .material-icons{font-size:2.2rem;color:var(--accent);background:var(--ok-bg);border-radius:14px;padding:10px;flex:0 0 auto}
+.herohead h1{margin:0}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.stat{display:flex;flex-direction:column;gap:2px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat .material-icons{color:var(--accent);font-size:1.3em}
+.stat b{font-size:1.35rem;line-height:1.2}
+.stat span{color:var(--muted);font-size:.82rem;font-weight:600}
+.rulenote{display:flex;align-items:center;gap:8px;font-size:.85rem;margin:2px 0 0}
+.rulenote .material-icons{color:var(--accent);font-size:1.1em}
 .gradeicon{margin:4px 0}
 .gradeicon .material-icons{font-size:2.6rem}
 .gradeicon.tier-great .material-icons{color:var(--ok)}
@@ -176,16 +183,21 @@ ul.wrong{padding-left:18px;margin:6px 0}
   <!-- START -->
   <section id="start">
     <div class="card">
-      <h1>Баланс</h1>
-      <p class="muted" style="margin-top:0">Игра за уравняване на химични уравнения</p>
-      <p>Уравнението е вярно, когато във всеки елемент броят атоми отляво е равен на броя атоми отдясно. Променяй коефициентите пред формулите, докато всички редове в таблицата станат зелени.</p>
-      <p class="muted">Уравненията са по темите от учебната програма за 7. клас: алкални метали и техните съединения, халогени, киселини и основи, карбонати. Металите и халогените се сменят случайно във всяка игра.</p>
-      <ul class="rules">
-        <li><span class="material-icons" aria-hidden="true">list_alt</span><span id="ruleTotal">12 уравнения. Всяко носи до 100 точки.</span></li>
-        <li><span class="material-icons" aria-hidden="true">remove_circle</span><span id="ruleMistake">Грешна проверка: −10 точки.</span></li>
-        <li><span class="material-icons" aria-hidden="true">lightbulb</span><span id="ruleHint">Подсказка: −25 точки.</span></li>
-        <li><span class="material-icons" aria-hidden="true">calculate</span>Коефициентите трябва да са най-малките възможни цели числа.</li>
-      </ul>
+      <div class="herohead">
+        <span class="material-icons" aria-hidden="true">balance</span>
+        <div>
+          <h1>Баланс</h1>
+          <p class="muted" style="margin:0">Игра за уравняване на химични уравнения</p>
+        </div>
+      </div>
+      <p>Уравнението е вярно, когато броят атоми на всеки елемент отляво и отдясно съвпада — променяй коефициентите пред формулите, докато всички редове в таблицата станат зелени. Темите са от 7. клас: алкални метали и техните съединения, халогени, киселини и основи, карбонати. Металът и халогенът се сменят случайно във всяка игра.</p>
+      <div class="statgrid">
+        <div class="stat"><span class="material-icons" aria-hidden="true">list_alt</span><b id="statTotal">12</b><span>уравнения</span></div>
+        <div class="stat"><span class="material-icons" aria-hidden="true">star</span><b id="statMax">100</b><span>макс. точки за уравнение</span></div>
+        <div class="stat"><span class="material-icons" aria-hidden="true">remove_circle</span><b id="statMistake">−10</b><span>за грешна проверка</span></div>
+        <div class="stat"><span class="material-icons" aria-hidden="true">lightbulb</span><b id="statHint">−25</b><span>за подсказка</span></div>
+      </div>
+      <p class="muted rulenote"><span class="material-icons" aria-hidden="true">calculate</span>Коефициентите трябва да са най-малките възможни цели числа.</p>
       <div class="actions"><button class="primary" id="btnStart"><span class="material-icons" aria-hidden="true">play_arrow</span>Започни</button></div>
       <div style="text-align:center;margin-top:10px">
         <button class="linklike" id="btnEditor"><span class="material-icons" aria-hidden="true" style="font-size:1em">tune</span>Редактор на съдържание</button>
@@ -197,7 +209,7 @@ ul.wrong{padding-left:18px;margin:6px 0}
   <section id="game" class="hidden">
     <div class="topbar">
       <span class="eqcount" id="eqCount"></span>
-      <span class="pill scorepill" id="scoreBox"><span class="material-icons" aria-hidden="true">scoreboard</span><span id="scoreVal">0</span><span class="potential hidden" id="potBadge"></span></span>
+      <span class="pill scorepill" id="scoreBox"><span class="material-icons" aria-hidden="true">star</span><span id="scoreVal">0</span><span class="potential hidden" id="potBadge"></span></span>
     </div>
     <div class="bar"><i id="prog"></i></div>
 
@@ -249,7 +261,7 @@ ul.wrong{padding-left:18px;margin:6px 0}
     </div>
 
     <div class="card">
-      <h2><span class="material-icons" aria-hidden="true">scoreboard</span>Точки</h2>
+      <h2><span class="material-icons" aria-hidden="true">star</span>Точки</h2>
       <div id="scoringForm"></div>
     </div>
 
@@ -643,9 +655,10 @@ function finish(){
 /* ---------- редактор на съдържание ---------- */
 function renderScoringText(){
   const s=ACTIVE_SCORING;
-  $('ruleTotal').textContent=GAME_LENGTH+' уравнения. Всяко носи до '+s.base+' точки.';
-  $('ruleMistake').textContent='Грешна проверка: −'+s.mistake+' точки.';
-  $('ruleHint').textContent='Подсказка: −'+s.hint+' точки.';
+  $('statTotal').textContent=GAME_LENGTH;
+  $('statMax').textContent=s.base;
+  $('statMistake').textContent='−'+s.mistake;
+  $('statHint').textContent='−'+s.hint;
   $('btnHintLabel').textContent='Подсказка (−'+s.hint+')';
 }
 
