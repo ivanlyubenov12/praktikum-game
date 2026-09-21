@@ -73,7 +73,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .potential{background:var(--ok-bg);color:var(--ok);border-radius:999px;padding:1px 9px;font-size:.8rem;font-weight:800;white-space:nowrap}
 .bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:14px}
 .bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
-.lvl{font-weight:700;color:var(--accent)}
+.eqcount{font-weight:700;color:var(--accent)}
 
 /* equation */
 .eq{display:flex;flex-wrap:nowrap;align-items:flex-end;justify-content:safe center;gap:10px 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px}
@@ -154,7 +154,6 @@ ul.wrong{padding-left:18px;margin:6px 0}
 .chipset input{margin:0}
 .eqlistrow{display:flex;align-items:center;gap:8px;padding:10px 4px;border-top:1px solid var(--line)}
 .eqlistrow:first-child{border-top:none}
-.eqlistrow .lvltag{font-size:.72rem;font-weight:800;color:var(--accent);background:var(--ok-bg);border-radius:999px;padding:2px 8px;flex:0 0 auto}
 .eqlistrow .eqtext{flex:1 1 auto;font-weight:700;overflow-x:auto;white-space:nowrap}
 .colorrow{display:flex;align-items:center;gap:10px;padding:6px 0}
 .colorrow input[type=text]{width:5em}
@@ -176,7 +175,7 @@ ul.wrong{padding-left:18px;margin:6px 0}
       <p>Уравнението е вярно, когато във всеки елемент броят атоми отляво е равен на броя атоми отдясно. Променяй коефициентите пред формулите, докато всички редове в таблицата станат зелени.</p>
       <p class="muted">Уравненията са по темите от учебната програма за 7. клас: алкални метали и техните съединения, халогени, киселини и основи, карбонати. Металите и халогените се сменят случайно във всяка игра.</p>
       <ul class="rules">
-        <li><span class="material-icons" aria-hidden="true">list_alt</span><span id="ruleTotal">12 уравнения в 3 нива. Всяко носи до 100 точки.</span></li>
+        <li><span class="material-icons" aria-hidden="true">list_alt</span><span id="ruleTotal">12 уравнения. Всяко носи до 100 точки.</span></li>
         <li><span class="material-icons" aria-hidden="true">remove_circle</span><span id="ruleMistake">Грешна проверка: −10 точки.</span></li>
         <li><span class="material-icons" aria-hidden="true">lightbulb</span><span id="ruleHint">Подсказка: −25 точки.</span></li>
         <li><span class="material-icons" aria-hidden="true">calculate</span>Коефициентите трябва да са най-малките възможни цели числа.</li>
@@ -191,7 +190,7 @@ ul.wrong{padding-left:18px;margin:6px 0}
   <!-- GAME -->
   <section id="game" class="hidden">
     <div class="topbar">
-      <span class="lvl" id="lvlName"></span>
+      <span class="eqcount" id="eqCount"></span>
       <span class="pill scorepill" id="scoreBox"><span class="material-icons" aria-hidden="true">scoreboard</span><span id="scoreVal">0</span><span class="potential hidden" id="potBadge"></span></span>
     </div>
     <div class="bar"><i id="prog"></i></div>
@@ -239,11 +238,6 @@ ul.wrong{padding-left:18px;margin:6px 0}
     <div class="topbar2">
       <h1 style="font-size:1.4rem;margin:0">Редактор на съдържание</h1>
       <button id="btnEditorBack"><span class="material-icons" aria-hidden="true">arrow_back</span>Назад</button>
-    </div>
-
-    <div class="card">
-      <h2><span class="material-icons" aria-hidden="true">library_books</span>Нива</h2>
-      <div id="levelsForm"></div>
     </div>
 
     <div class="card">
@@ -298,68 +292,64 @@ const N_HACID = {F:'флуороводород',Cl:'хлороводород',Br
 const AG_COLOR= {Cl:'бяла',Br:'бледожълта',I:'жълта'};
 const U = f => f.replace(/\d/g, d => '₀₁₂₃₄₅₆₇₈₉'[d]);   // Unicode подиндекси за текст
 
-const LEVELS = ['Ниво 1 – Съединяване и разлагане','Ниво 2 – Заместване и неутрализация','Ниво 3 – Хлор, карбонати и качествени реакции'];
-const PER_LEVEL = [4,4,4];
+const GAME_LENGTH = 12;   // уравнения на игра
 
 /* Шаблони: {M} = алкален метал, {X}/{Y} = халоген. Коефициентите не зависят от избрания елемент.
    vars: позволени стойности; ok: допълнително ограничение; note: обяснение след верен отговор. */
 const TEMPLATES = [
-  // ---- Ниво 1
-  {id:'m-o2', lvl:0, left:['{M}','O2'], right:['{M}2O'], sol:[4,1,2], vars:{M:['Li','Na']},
+  {id:'m-o2', left:['{M}','O2'], right:['{M}2O'], sol:[4,1,2], vars:{M:['Li','Na']},
    note:v=>`Реакция на съединяване: ${N_MET[v.M]} се окислява от кислорода и се получава ${N_ADJ[v.M]} оксид ${U(v.M+'2O')} – основен оксид. Така се записва на училищно ниво. В действителност само литият дава предимно оксид; натрият образува предимно пероксид (виж следващите две уравнения за калий, рубидий и цезий).`},
-  {id:'m-o2-perox', lvl:0, left:['{M}','O2'], right:['{M}2O2'], sol:[2,1,1], vars:{M:['K','Rb','Cs']},
+  {id:'m-o2-perox', left:['{M}','O2'], right:['{M}2O2'], sol:[2,1,1], vars:{M:['K','Rb','Cs']},
    note:v=>`Реакция на съединяване: ${N_MET[v.M]} е по-активен алкален метал и при горене в кислород не спира до обикновен оксид – директно се получава пероксид ${U(v.M+'2O2')}, затова коефициентите тук са различни от тези при литий и натрий.`},
-  {id:'m2o2-decomp', lvl:0, left:['{M}2O2'], right:['{M}2O','O2'], sol:[2,2,1], vars:{M:['K','Rb','Cs']},
+  {id:'m2o2-decomp', left:['{M}2O2'], right:['{M}2O','O2'], sol:[2,2,1], vars:{M:['K','Rb','Cs']},
    note:v=>`Реакция на разлагане: при силно нагряване пероксидът ${U(v.M+'2O2')} се разпада на оксид ${U(v.M+'2O')} и кислород.`},
-  {id:'m-x2', lvl:0, left:['{M}','{X}2'], right:['{M}{X}'], sol:[2,1,2], vars:{M:ALK,X:HAL},
+  {id:'m-x2', left:['{M}','{X}2'], right:['{M}{X}'], sol:[2,1,2], vars:{M:ALK,X:HAL},
    note:v=>`Реакция на съединяване: ${N_MET[v.M]} и ${N_HAL[v.X]} образуват сол – ${N_ADJ[v.M]} ${N_HALIDE[v.X]} (${v.M}${v.X}). И двата елемента са I валентни.`},
-  {id:'h2-x2', lvl:0, left:['H2','{X}2'], right:['H{X}'], sol:[1,1,2], vars:{X:HAL},
+  {id:'h2-x2', left:['H2','{X}2'], right:['H{X}'], sol:[1,1,2], vars:{X:HAL},
    note:v=>`Реакция на съединяване: водород и ${N_HAL[v.X]} дават ${N_HACID[v.X]} (H${v.X}). Разтворен във вода, H${v.X} е киселина.`},
-  {id:'h2-o2', lvl:0, left:['H2','O2'], right:['H2O'], sol:[2,1,2],
+  {id:'h2-o2', left:['H2','O2'], right:['H2O'], sol:[2,1,2],
    note:()=>'Реакция на съединяване: водородът гори в кислорода и се образува вода. Атомите не изчезват и не се появяват отново – масата се запазва (закон на Лавоазие).'},
-  {id:'n2-h2', lvl:0, left:['N2','H2'], right:['NH3'], sol:[1,3,2],
+  {id:'n2-h2', left:['N2','H2'], right:['NH3'], sol:[1,3,2],
    note:()=>'Реакция на съединяване: от азот и водород се получава амоняк, в който азотът е III валентен. Амонякът е суровина за торове.'},
-  {id:'hgo', lvl:0, left:['HgO'], right:['Hg','O2'], sol:[2,2,1],
+  {id:'hgo', left:['HgO'], right:['Hg','O2'], sol:[2,2,1],
    note:()=>'Реакция на разлагане: при нагряване живачният(II) оксид се разпада на живак и кислород. С такава реакция през 1774 г. Джоузеф Пристли получава кислород.'},
-  {id:'m2o-h2o', lvl:0, left:['{M}2O','H2O'], right:['{M}OH'], sol:[1,1,2], vars:{M:ALK},
+  {id:'m2o-h2o', left:['{M}2O','H2O'], right:['{M}OH'], sol:[1,1,2], vars:{M:ALK},
    note:v=>`Основният оксид ${U(v.M+'2O')} реагира с вода и дава основа – ${N_BASE[v.M]} основа ${v.M}OH. Разтворът е алкален.`},
 
-  // ---- Ниво 2
-  {id:'m-h2o', lvl:1, left:['{M}','H2O'], right:['{M}OH','H2'], sol:[2,2,2,1], vars:{M:ALK},
+  {id:'m-h2o', left:['{M}','H2O'], right:['{M}OH','H2'], sol:[2,2,2,1], vars:{M:ALK},
    note:v=>`Реакция на заместване: ${N_MET[v.M]} измества водорода от водата и се получават ${N_BASE[v.M]} основа и водород. Колкото по-надолу в групата е металът, толкова по-бурна е реакцията. Опитът се прави само от учител.`},
-  {id:'moh-hx', lvl:1, left:['{M}OH','H{X}'], right:['{M}{X}','H2O'], sol:[1,1,1,1], vars:{M:ALK,X:HAL},
+  {id:'moh-hx', left:['{M}OH','H{X}'], right:['{M}{X}','H2O'], sol:[1,1,1,1], vars:{M:ALK,X:HAL},
    note:v=>`Неутрализация: основа + киселина → сол + вода. Солта е ${N_ADJ[v.M]} ${N_HALIDE[v.X]}.`},
-  {id:'m2o-hx', lvl:1, left:['{M}2O','H{X}'], right:['{M}{X}','H2O'], sol:[1,2,2,1], vars:{M:ALK,X:HAL},
+  {id:'m2o-hx', left:['{M}2O','H{X}'], right:['{M}{X}','H2O'], sol:[1,2,2,1], vars:{M:ALK,X:HAL},
    note:v=>`Основен оксид + киселина → сол + вода. Получава се ${N_ADJ[v.M]} ${N_HALIDE[v.X]}.`},
-  {id:'al-o2', lvl:1, left:['Al','O2'], right:['Al2O3'], sol:[4,3,2],
+  {id:'al-o2', left:['Al','O2'], right:['Al2O3'], sol:[4,3,2],
    note:()=>'Алуминият е III валентен. Върху повърхността му се образува тънък слой алуминиев оксид, който го пази от по-нататъшно окисляване.'},
-  {id:'p-o2', lvl:1, left:['P','O2'], right:['P2O5'], sol:[4,5,2],
+  {id:'p-o2', left:['P','O2'], right:['P2O5'], sol:[4,5,2],
    note:()=>'Фосфорът гори с ярък пламък и се образува дифосфорен пентаоксид – фосфорът е V валентен.'},
-  {id:'al-hcl', lvl:1, left:['Al','HCl'], right:['AlCl3','H2'], sol:[2,6,2,3],
+  {id:'al-hcl', left:['Al','HCl'], right:['AlCl3','H2'], sol:[2,6,2,3],
    note:()=>'Реакция на заместване: алуминият измества водорода от солната киселина. Получава се алуминиев хлорид и водород (газ).'},
-  {id:'caoh2-hcl', lvl:1, left:['Ca(OH)2','HCl'], right:['CaCl2','H2O'], sol:[1,2,1,2],
+  {id:'caoh2-hcl', left:['Ca(OH)2','HCl'], right:['CaCl2','H2O'], sol:[1,2,1,2],
    note:()=>'Неутрализация: основа + киселина → сол + вода. В Ca(OH)₂ индексът 2 важи за цялата група OH.'},
 
-  // ---- Ниво 3
-  {id:'x2-h2o', lvl:2, left:['{X}2','H2O'], right:['H{X}','H{X}O'], sol:[1,1,1,1], vars:{X:['Cl','Br']},
+  {id:'x2-h2o', left:['{X}2','H2O'], right:['H{X}','H{X}O'], sol:[1,1,1,1], vars:{X:['Cl','Br']},
    note:v=>`${N_HAL[v.X][0].toUpperCase()+N_HAL[v.X].slice(1)}ът се разтваря във вода и частично реагира: получават се две киселини – H${v.X} и H${v.X}O.`+(v.X==='Cl'?' Киселината HClO обеззаразява, затова водата в басейните се хлорира.':'')},
-  {id:'x2-moh', lvl:2, left:['{X}2','{M}OH'], right:['{M}{X}','{M}{X}O','H2O'], sol:[1,2,1,1,1], vars:{M:ALK,X:['Cl','Br']},
+  {id:'x2-moh', left:['{X}2','{M}OH'], right:['{M}{X}','{M}{X}O','H2O'], sol:[1,2,1,1,1], vars:{M:ALK,X:['Cl','Br']},
    note:v=>`Халогенът реагира с основа и образува сол на две киселини: ${v.M}${v.X} и ${v.M}${v.X}O.`+(v.X==='Cl'&&v.M==='Na'?' NaClO е основата на белина.':'')},
-  {id:'moh-co2', lvl:2, left:['{M}OH','CO2'], right:['{M}2CO3','H2O'], sol:[2,1,1,1], vars:{M:ALK},
+  {id:'moh-co2', left:['{M}OH','CO2'], right:['{M}2CO3','H2O'], sol:[2,1,1,1], vars:{M:ALK},
    note:v=>`Основа + киселинен оксид → сол + вода. Получава се ${N_ADJ[v.M]} карбонат ${U(v.M+'2CO3')}. Внимание: формулата е ${U(v.M+'2CO3')}, не ${v.M}CO₃ – металът е I валентен, а групата CO₃ е II валентна.`},
-  {id:'m2o-co2', lvl:2, left:['{M}2O','CO2'], right:['{M}2CO3'], sol:[1,1,1], vars:{M:ALK},
+  {id:'m2o-co2', left:['{M}2O','CO2'], right:['{M}2CO3'], sol:[1,1,1], vars:{M:ALK},
    note:v=>`Основен оксид + киселинен оксид → сол: ${N_ADJ[v.M]} карбонат ${U(v.M+'2CO3')}.`},
-  {id:'moh-co2-hc', lvl:2, left:['{M}OH','CO2'], right:['{M}HCO3'], sol:[1,1,1], vars:{M:['Na','K']},
+  {id:'moh-co2-hc', left:['{M}OH','CO2'], right:['{M}HCO3'], sol:[1,1,1], vars:{M:['Na','K']},
    note:v=>`При излишък на CO₂ се получава хидрогенкарбонат ${v.M}HCO₃.`+(v.M==='Na'?' NaHCO₃ е содата за хляб.':'')},
-  {id:'mhco3', lvl:2, left:['{M}HCO3'], right:['{M}2CO3','H2O','CO2'], sol:[2,1,1,1], vars:{M:['Na','K']},
+  {id:'mhco3', left:['{M}HCO3'], right:['{M}2CO3','H2O','CO2'], sol:[2,1,1,1], vars:{M:['Na','K']},
    note:v=>`Реакция на разлагане при нагряване: хидрогенкарбонатът се разпада на карбонат, вода и CO₂.`+(v.M==='Na'?' Затова содата за хляб „повдига“ тестото: CO₂ образува мехурчета.':'')},
-  {id:'m2co3-hx', lvl:2, left:['{M}2CO3','H{X}'], right:['{M}{X}','H2O','CO2'], sol:[1,2,2,1,1], vars:{M:ALK,X:HAL},
+  {id:'m2co3-hx', left:['{M}2CO3','H{X}'], right:['{M}{X}','H2O','CO2'], sol:[1,2,2,1,1], vars:{M:ALK,X:HAL},
    note:v=>`Карбонатите реагират с киселини и отделят CO₂ (газ, пяна). Получава се ${N_ADJ[v.M]} ${N_HALIDE[v.X]}.`},
-  {id:'agno3-hx', lvl:2, left:['AgNO3','H{X}'], right:['Ag{X}','HNO3'], sol:[1,1,1,1], vars:{X:['Cl','Br','I']},
+  {id:'agno3-hx', left:['AgNO3','H{X}'], right:['Ag{X}','HNO3'], sol:[1,1,1,1], vars:{X:['Cl','Br','I']},
    note:v=>`Качествена реакция за халогенидни йони: получава се ${AG_COLOR[v.X]} утайка от Ag${v.X}.`},
-  {id:'agno3-mx', lvl:2, left:['AgNO3','{M}{X}'], right:['Ag{X}','{M}NO3'], sol:[1,1,1,1], vars:{M:ALK,X:['Cl','Br','I']},
+  {id:'agno3-mx', left:['AgNO3','{M}{X}'], right:['Ag{X}','{M}NO3'], sol:[1,1,1,1], vars:{M:ALK,X:['Cl','Br','I']},
    note:v=>`Качествена реакция за халогениди: Ag${v.X} се отделя като ${AG_COLOR[v.X]} утайка, а ${N_ADJ[v.M]} нитрат остава в разтвора.`},
-  {id:'x2-my', lvl:2, left:['{X}2','{M}{Y}'], right:['{M}{X}','{Y}2'], sol:[1,2,2,1], vars:{M:ALK,X:['Cl','Br'],Y:['Br','I']}, ok:v=>ACT[v.X]>ACT[v.Y],
+  {id:'x2-my', left:['{X}2','{M}{Y}'], right:['{M}{X}','{Y}2'], sol:[1,2,2,1], vars:{M:ALK,X:['Cl','Br'],Y:['Br','I']}, ok:v=>ACT[v.X]>ACT[v.Y],
    note:v=>`Реакция на заместване между халогени: по-активният ${N_HAL[v.X]} измества ${N_HAL[v.Y]} от неговата сол. Активността намалява надолу в групата, затова обратната реакция не протича.`}
 ];
 
@@ -368,14 +358,13 @@ const MAXC = 10;
 /* ---------- потребителско съдържание (localStorage) ---------- */
 const LS_KEY = 'balans_custom_v1';
 const SCORING_DEFAULT = {base:100, mistake:10, hint:25, maxCoef:MAXC};
-function emptyCustom(){ return {templates:[], deletedIds:[], levels:null, perLevel:null, colors:{}, scoring:{}}; }
+function emptyCustom(){ return {templates:[], deletedIds:[], colors:{}, scoring:{}}; }
 function loadCustom(){
   try{
     const raw=localStorage.getItem(LS_KEY);
     if(!raw) return emptyCustom();
     const c=JSON.parse(raw);
     return {templates:Array.isArray(c.templates)?c.templates:[], deletedIds:Array.isArray(c.deletedIds)?c.deletedIds:[],
-      levels:Array.isArray(c.levels)?c.levels:null, perLevel:Array.isArray(c.perLevel)?c.perLevel:null,
       colors:(c.colors&&typeof c.colors==='object')?c.colors:{}, scoring:(c.scoring&&typeof c.scoring==='object')?c.scoring:{}};
   }catch(e){ return emptyCustom(); }
 }
@@ -399,20 +388,18 @@ function renderNoteTemplate(tpl, v){
   });
 }
 function toRuntimeTemplate(ct){
-  return {id:ct.id, lvl:ct.lvl, left:ct.left.slice(), right:ct.right.slice(), sol:ct.sol.slice(),
+  return {id:ct.id, left:ct.left.slice(), right:ct.right.slice(), sol:ct.sol.slice(),
     vars:(ct.vars&&Object.keys(ct.vars).length)?ct.vars:undefined, note:v=>renderNoteTemplate(ct.noteTpl,v)};
 }
 
-// Активно съдържание = вградено (TEMPLATES/LEVELS/...) + потребителски промени (custom) върху него.
-let ACTIVE_TEMPLATES, ACTIVE_LEVELS, ACTIVE_PER_LEVEL, ACTIVE_COLORS, ACTIVE_SCORING;
+// Активно съдържание = вградено (TEMPLATES/COLORS/...) + потребителски промени (custom) върху него.
+let ACTIVE_TEMPLATES, ACTIVE_COLORS, ACTIVE_SCORING;
 function rebuildActive(){
   const overrides={}; custom.templates.forEach(t=>{ overrides[t.id]=t; });
   const builtinIds=new Set(TEMPLATES.map(t=>t.id));
   const kept=TEMPLATES.filter(t=>!custom.deletedIds.includes(t.id)).map(t=>overrides[t.id]?toRuntimeTemplate(overrides[t.id]):t);
   const added=custom.templates.filter(t=>!builtinIds.has(t.id)).map(toRuntimeTemplate);
   ACTIVE_TEMPLATES=[...kept,...added];
-  ACTIVE_LEVELS=(custom.levels&&custom.levels.length===LEVELS.length)?custom.levels:LEVELS;
-  ACTIVE_PER_LEVEL=(custom.perLevel&&custom.perLevel.length===PER_LEVEL.length)?custom.perLevel:PER_LEVEL;
   ACTIVE_COLORS={...COLORS,...custom.colors};
   ACTIVE_SCORING={...SCORING_DEFAULT,...custom.scoring};
 }
@@ -454,17 +441,16 @@ function enumerate(t){                              // всички допуст
 }
 function instantiate(t,v){
   const sub=f=>f.replace(/\{(\w)\}/g,(_,k)=>v[k]);
-  return {id:t.id,lvl:t.lvl,left:t.left.map(sub),right:t.right.map(sub),sol:t.sol.slice(),note:t.note(v),vars:v};
+  return {id:t.id,left:t.left.map(sub),right:t.right.map(sub),sol:t.sol.slice(),note:t.note(v),vars:v};
 }
 function generateSet(seed){
-  const r=mulberry32(seed), out=[];
-  for(let lvl=0;lvl<ACTIVE_PER_LEVEL.length;lvl++){
-    const pool=ACTIVE_TEMPLATES.filter(t=>t.lvl===lvl);
-    let picked=shuffle(pool.filter(t=>t.sol.some(c=>c>1)),r).slice(0,2);   // поне 2 „истински“ уравнения
-    const rest=shuffle(pool.filter(t=>!picked.includes(t)),r);
-    picked=picked.concat(rest.slice(0,ACTIVE_PER_LEVEL[lvl]-picked.length));
-    shuffle(picked,r).forEach(t=>{ const c=enumerate(t); out.push(instantiate(t,c[Math.floor(r()*c.length)])); });
-  }
+  const r=mulberry32(seed);
+  const pool=ACTIVE_TEMPLATES;
+  let picked=shuffle(pool.filter(t=>t.sol.some(c=>c>1)),r).slice(0,GAME_LENGTH/2);   // поне половината „истински“ уравнения
+  const rest=shuffle(pool.filter(t=>!picked.includes(t)),r);
+  picked=picked.concat(rest.slice(0,GAME_LENGTH-picked.length));
+  const out=[];
+  shuffle(picked,r).forEach(t=>{ const c=enumerate(t); out.push(instantiate(t,c[Math.floor(r()*c.length)])); });
   return out;
 }
 
@@ -490,7 +476,7 @@ function loadEq(){
   coefs=e.sol.map(()=>0);
   mistakes=0; hints=0; solved=false;
   window.scrollTo(0,0);
-  $('lvlName').textContent=ACTIVE_LEVELS[e.lvl]+'  ('+(idx+1)+'/'+EQS.length+')';
+  $('eqCount').textContent=(idx+1)+'/'+EQS.length;
   $('prog').style.width=(idx/EQS.length*100)+'%';
   $('feedback').innerHTML='';
   $('gameActions').classList.remove('hidden');
@@ -641,7 +627,7 @@ function finish(){
 /* ---------- редактор на съдържание ---------- */
 function renderScoringText(){
   const s=ACTIVE_SCORING;
-  $('ruleTotal').textContent='12 уравнения в 3 нива. Всяко носи до '+s.base+' точки.';
+  $('ruleTotal').textContent=GAME_LENGTH+' уравнения. Всяко носи до '+s.base+' точки.';
   $('ruleMistake').textContent='Грешна проверка: −'+s.mistake+' точки.';
   $('ruleHint').textContent='Подсказка: −'+s.hint+' точки.';
   $('btnHintLabel').textContent='Подсказка (−'+s.hint+')';
@@ -677,10 +663,10 @@ function checkTemplateBalance(tpl){
 }
 
 let eqFormState=null;
-function blankFormState(){ return {id:null, lvl:0, left:[{coef:1,formula:''}], right:[{coef:1,formula:''}], varsM:[], varsX:[], note:''}; }
+function blankFormState(){ return {id:null, left:[{coef:1,formula:''}], right:[{coef:1,formula:''}], varsM:[], varsX:[], note:''}; }
 function formStateFromCustom(ct){
   const n=ct.left.length;
-  return {id:ct.id, lvl:ct.lvl,
+  return {id:ct.id,
     left:ct.left.map((f,i)=>({coef:ct.sol[i],formula:f})),
     right:ct.right.map((f,i)=>({coef:ct.sol[n+i],formula:f})),
     varsM:(ct.vars&&ct.vars.M)?ct.vars.M.slice():[], varsX:(ct.vars&&ct.vars.X)?ct.vars.X.slice():[],
@@ -690,7 +676,7 @@ function formStateFromBuiltin(t){
   const n=t.left.length;
   let noteText='';
   try{ const combos=enumerate(t); noteText=combos.length?t.note(combos[0]):''; }catch(e){}
-  return {id:t.id, lvl:t.lvl,
+  return {id:t.id,
     left:t.left.map((f,i)=>({coef:t.sol[i],formula:f})),
     right:t.right.map((f,i)=>({coef:t.sol[n+i],formula:f})),
     varsM:(t.vars&&t.vars.M)?t.vars.M.slice():[], varsX:(t.vars&&t.vars.X)?t.vars.X.slice():[],
@@ -732,9 +718,6 @@ function renderEqForm(){
   const usesX=s.left.concat(s.right).some(t=>/\{X\}/.test(t.formula));
   const chipset=(list,selected,key)=>list.map(el=>`<label><input type="checkbox" data-k="${key}" value="${el}" ${selected.includes(el)?'checked':''}>${el}</label>`).join('');
   $('eqForm').innerHTML=`
-    <div class="field"><label>Ниво</label>
-      <select id="fLvl">${ACTIVE_LEVELS.map((l,i)=>`<option value="${i}" ${i==s.lvl?'selected':''}>Ниво ${i+1}</option>`).join('')}</select>
-    </div>
     <div class="field"><label>Отляво (реагенти)</label><div id="fLeft">${termRows(s.left,'left')}</div>
       <button type="button" id="fAddLeft"><span class="material-icons" aria-hidden="true">add</span>Добави вещество</button></div>
     <div class="field"><label>Отдясно (продукти)</label><div id="fRight">${termRows(s.right,'right')}</div>
@@ -761,7 +744,6 @@ function renderEqForm(){
 
 function onFormInput(e){
   const el=e.target, s=eqFormState;
-  if(el.id==='fLvl'){ s.lvl=+el.value; return validateForm(); }
   if(el.id==='fNote'){ s.note=el.value; return; }
   if(el.dataset.k==='M'){ s.varsM=[...$('eqForm').querySelectorAll('input[data-k=M]:checked')].map(c=>c.value); return validateForm(); }
   if(el.dataset.k==='X'){ s.varsX=[...$('eqForm').querySelectorAll('input[data-k=X]:checked')].map(c=>c.value); return validateForm(); }
@@ -780,7 +762,7 @@ function buildTplFromForm(){
   const vars={};
   if(s.varsM.length) vars.M=s.varsM;
   if(s.varsX.length) vars.X=s.varsX;
-  return {id:s.id||('custom-'+Date.now().toString(36)), lvl:s.lvl, left, right, sol, vars, noteTpl:s.note};
+  return {id:s.id||('custom-'+Date.now().toString(36)), left, right, sol, vars, noteTpl:s.note};
 }
 
 function validateForm(){
@@ -825,7 +807,6 @@ function renderEqList(){
       preview=t.left.map(sub).join(' + ')+' → '+t.right.map(sub).join(' + ');
     }catch(e){ preview=t.id; }
     return `<div class="eqlistrow">
-      <span class="lvltag">Н${t.lvl+1}</span>
       <span class="eqtext">${preview}</span>
       <button type="button" class="iconbtn" data-act="edit" data-id="${t.id}" ${complex?'disabled title="Сложен шаблон – редактирай в кода"':''} aria-label="Редактирай"><span class="material-icons" aria-hidden="true">edit</span></button>
       <button type="button" class="iconbtn danger" data-act="del" data-id="${t.id}" aria-label="Изтрий"><span class="material-icons" aria-hidden="true">delete</span></button>
@@ -834,18 +815,6 @@ function renderEqList(){
   $('eqList').innerHTML=rows||'<p class="muted">Няма уравнения.</p>';
   $('eqList').querySelectorAll('[data-act=edit]:not(:disabled)').forEach(b=>b.onclick=()=>openEqForm(b.dataset.id));
   $('eqList').querySelectorAll('[data-act=del]').forEach(b=>b.onclick=()=>deleteEq(b.dataset.id));
-}
-
-function renderLevelsForm(){
-  $('levelsForm').innerHTML=ACTIVE_LEVELS.map((name,i)=>`
-    <div class="field"><label>Ниво ${i+1}</label>
-      <input type="text" data-lvl="${i}" value="${name.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">
-    </div>`).join('');
-  $('levelsForm').querySelectorAll('input').forEach(inp=>inp.addEventListener('change',()=>{
-    const arr=(custom.levels&&custom.levels.length===LEVELS.length)?custom.levels.slice():LEVELS.slice();
-    arr[+inp.dataset.lvl]=inp.value||LEVELS[+inp.dataset.lvl];
-    custom.levels=arr; saveCustom(); rebuildActive();
-  }));
 }
 
 function renderScoringForm(){
@@ -906,7 +875,6 @@ function importCustomFile(file){
     try{
       const c=JSON.parse(reader.result);
       custom={templates:Array.isArray(c.templates)?c.templates:[], deletedIds:Array.isArray(c.deletedIds)?c.deletedIds:[],
-        levels:Array.isArray(c.levels)?c.levels:null, perLevel:Array.isArray(c.perLevel)?c.perLevel:null,
         colors:(c.colors&&typeof c.colors==='object')?c.colors:{}, scoring:(c.scoring&&typeof c.scoring==='object')?c.scoring:{}};
       saveCustom(); rebuildActive(); renderEditor(); renderScoringText();
       alert('Файлът е зареден.');
@@ -920,7 +888,6 @@ function resetCustom(){
 }
 
 function renderEditor(){
-  renderLevelsForm();
   renderScoringForm();
   renderColorsForm();
   renderEqList();

@@ -8,12 +8,12 @@ One file, `index.html`. No modules. Everything is global inside a single `<scrip
 
 ## Custom content layer
 
-`TEMPLATES`/`LEVELS`/`PER_LEVEL`/`COLORS` (below) are the built-in defaults and stay exactly as authored —
-`tools/validate.js` checks them and only them. What the game actually plays is `ACTIVE_TEMPLATES` /
-`ACTIVE_LEVELS` / `ACTIVE_PER_LEVEL` / `ACTIVE_COLORS` / `ACTIVE_SCORING`, computed by `rebuildActive()` as
-the defaults with the player's `custom` overrides (from `localStorage`, editable via the **Редактор на
-съдържание** screen) layered on top. Every runtime function reads the `ACTIVE_*` globals. Full design,
-including the note-template token language custom equations use instead of a JS function: `docs/EDITOR.md`.
+`TEMPLATES`/`COLORS` (below) are the built-in defaults and stay exactly as authored — `tools/validate.js`
+checks them and only them. What the game actually plays is `ACTIVE_TEMPLATES` / `ACTIVE_COLORS` /
+`ACTIVE_SCORING`, computed by `rebuildActive()` as the defaults with the player's `custom` overrides (from
+`localStorage`, editable via the **Редактор на съдържание** screen) layered on top. Every runtime function
+reads the `ACTIVE_*` globals. Full design, including the note-template token language custom equations use
+instead of a JS function: `docs/EDITOR.md`.
 
 ## Equation templates
 
@@ -21,7 +21,7 @@ Equations are not hard-coded. `TEMPLATES` holds reaction patterns; placeholders 
 elements when a game starts.
 
 ```js
-{ id:'m-x2', lvl:0,                       // level index into LEVELS
+{ id:'m-x2',
   left:['{M}','{X}2'], right:['{M}{X}'],  // {M}=alkali metal, {X}/{Y}=halogen
   sol:[2,1,2],                            // coefficients, left then right, smallest whole numbers
   vars:{M:ALK, X:HAL},                    // allowed values per placeholder
@@ -43,15 +43,15 @@ equation `{id, lvl, left, right, sol, note, vars}`.
 
 ## Generator
 
-`generateSet(seed)` (seeded PRNG `mulberry32`, deterministic), reading `ACTIVE_TEMPLATES`/`ACTIVE_PER_LEVEL`:
+`generateSet(seed)` (seeded PRNG `mulberry32`, deterministic), reading `ACTIVE_TEMPLATES`, flat — no grouping:
 
-1. For each level (`ACTIVE_PER_LEVEL`, `[4,4,4]` by default): take the templates of that level.
-2. Pick 2 templates that have at least one coefficient > 1 (so a level is never all "1 + 1 → 1 + 1"), then fill
-   up to the level's count with other templates of the level, all distinct.
-3. Shuffle inside the level; for each template pick one random allowed substitution.
+1. Pick `GAME_LENGTH/2` templates (6 of 12 by default) that have at least one coefficient > 1, so a game is
+   never mostly "1 + 1 → 1 + 1", then fill up to `GAME_LENGTH` with other templates from the whole pool, all
+   distinct.
+2. Shuffle the picked templates; for each one pick one random allowed substitution.
 
-If the player has deleted every template in a level through the editor, that level simply generates fewer
-equations — this doesn't crash, but isn't checked or prevented either.
+If the player has deleted templates through the editor so the pool is smaller than `GAME_LENGTH`, the game
+simply generates fewer equations — this doesn't crash, but isn't checked or prevented either.
 
 `startGame()` calls `generateSet(nextSeed())`. Seed comes from `?seed=N` in the URL (then N, N+1, … for each new
 game) or `Math.random()`. The end screen prints the seed.

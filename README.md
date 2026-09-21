@@ -6,11 +6,11 @@ bases, carbonates, and the silver nitrate test for halides. A live atom counter 
 shows atom counts left vs right as you adjust coefficients.
 
 **Every game is different.** Equations come from templates, and the alkali metal (Li, Na, K, Rb, Cs) and the
-halogen (F, Cl, Br, I) are chosen at random. 12 equations per game, 3 levels.
+halogen (F, Cl, Br, I) are chosen at random. 12 equations per game, drawn at random from the whole pool.
 
 **All of it is editable in the app itself.** Open **Редактор на съдържание** from the start screen to add,
-edit or delete equations (built-in ones included), rename levels, change scoring, or recolour elements — no
-code editing needed. See `docs/EDITOR.md`.
+edit or delete equations (built-in ones included), change scoring, or recolour elements — no code editing
+needed. See `docs/EDITOR.md`.
 
 Built as a school project (NOIT 2025/2026, task 2: a computer game for revision of a chemistry topic).
 
@@ -37,13 +37,15 @@ gets a random seed, and the end screen shows it.
 - Coefficients must be the smallest whole numbers (2, 2, 4 is rejected even though it balances).
 - Score: max 100 per equation, −10 per wrong check, −25 per hint. Max 1200. (All editable — see below.)
 
-## Levels
+## Equation topics
 
-1. Combination and decomposition: `4M + O₂` (Li, Na oxide), `2M + O₂ → M₂O₂` (K, Rb, Cs peroxide),
-   `2M₂O₂ → 2M₂O + O₂`, `2M + X₂`, `H₂ + X₂`, `M₂O + H₂O`, plus a few classics.
-2. Substitution and neutralisation: `2M + 2H₂O`, `MOH + HX`, `M₂O + 2HX`, plus Al/P oxides, `Al + HCl`, `Ca(OH)₂ + HCl`.
-3. Chlorine, carbonates and qualitative reactions: `X₂ + H₂O`, `X₂ + 2MOH`, `2MOH + CO₂`, `2NaHCO₃ → …`,
-   `M₂CO₃ + 2HX`, `AgNO₃ + HX`, halogen displacement.
+Combination and decomposition: `4M + O₂` (Li, Na oxide), `2M + O₂ → M₂O₂` (K, Rb, Cs peroxide),
+`2M₂O₂ → 2M₂O + O₂`, `2M + X₂`, `H₂ + X₂`, `M₂O + H₂O`, plus a few classics. Substitution and neutralisation:
+`2M + 2H₂O`, `MOH + HX`, `M₂O + 2HX`, plus Al/P oxides, `Al + HCl`, `Ca(OH)₂ + HCl`. Chlorine, carbonates and
+qualitative reactions: `X₂ + H₂O`, `X₂ + 2MOH`, `2MOH + CO₂`, `2NaHCO₃ → …`, `M₂CO₃ + 2HX`, `AgNO₃ + HX`,
+halogen displacement.
+
+Every game draws 12 equations at random from the whole pool above — there's no grouping or ordering in-game.
 
 (M = alkali metal, X = halogen. Full list: `docs/CURRICULUM.md`.)
 

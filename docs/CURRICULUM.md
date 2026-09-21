@@ -27,34 +27,37 @@ generalises them to the other alkali metals and halogens, as requested.
 with a neighbouring substance. "My choice" = fits the topics but I found no matching 7th grade source. **Check
 "pattern" and "my choice" rows with the teacher.**
 
-| Level | Template | Basis |
+The "Group" column is a documentation grouping only, by topic — the game itself has no levels; every game
+draws a flat random sample of `GAME_LENGTH` equations from the whole pool.
+
+| Group | Template | Basis |
 |---|---|---|
-| 1 | 4M + O₂ → 2M₂O (Li, Na) | Source for Na (scheme 1). Li: pattern |
-| 1 | 2M + O₂ → M₂O₂ (K, Rb, Cs) | My choice. Not in a 7th grade source; added so the more reactive alkali metals don't reuse the Na₂O-style oxide. Real chemistry (docs/SCIENCE.md), simplified to peroxide rather than superoxide |
-| 1 | 2M₂O₂ → 2M₂O + O₂ (K, Rb, Cs) | My choice, pattern with 2HgO → 2Hg + O₂ below (thermal decomposition) |
-| 1 | 2M + X₂ → 2MX | Source for Na + Cl₂ (scheme 1); Li + Cl₂ in Просвета. Other combinations: pattern |
-| 1 | H₂ + X₂ → 2HX | Source for H₂ + Cl₂ (scheme 2, Булвест exercise). Others: pattern |
-| 1 | M₂O + H₂O → 2MOH | Source for Na₂O (scheme 1). Others: pattern |
-| 1 | 2H₂ + O₂ → 2H₂O | Source (equations lesson) |
-| 1 | N₂ + 3H₂ → 2NH₃ | Source (equations lesson, РИО Бургас worksheet) |
-| 1 | 2HgO → 2Hg + O₂ | Source (Просвета test) |
-| 2 | 2M + 2H₂O → 2MOH + H₂ | Source for Na (scheme 1; Просвета test). Others: pattern |
-| 2 | MOH + HX → MX + H₂O | Source for NaOH + HCl (scheme 1) and KOH + HCl (Булвест). Others: pattern |
-| 2 | M₂O + 2HX → 2MX + H₂O | Pattern (basic oxide + acid → salt + water). No exact source found |
-| 2 | 4Al + 3O₂ → 2Al₂O₃ | Source (equations lesson) |
-| 2 | 4P + 5O₂ → 2P₂O₅ | Source (Просвета test) |
-| 2 | 2Al + 6HCl → 2AlCl₃ + 3H₂ | My choice. Pattern: Mg + 2HCl → MgCl₂ + H₂ in student worksheets |
-| 2 | Ca(OH)₂ + 2HCl → CaCl₂ + 2H₂O | My choice. Pattern: NaOH/KOH + HCl. Only formula with brackets |
-| 3 | X₂ + H₂O → HX + HXO (Cl, Br) | Source for Cl₂ (scheme 2). Br: pattern. HClO and other oxygen acids of halogens appear in Просвета lesson 36 |
-| 3 | X₂ + 2MOH → MX + MXO + H₂O (Cl, Br) | Source for Cl₂ + NaOH (scheme 2). Other combinations: pattern |
-| 3 | 2MOH + CO₂ → M₂CO₃ + H₂O | My choice. 7th grade tests do cover Na₂CO₃ (soda) and NaHCO₃; the reaction itself is a pattern |
-| 3 | M₂O + CO₂ → M₂CO₃ | My choice (same as above) |
-| 3 | MOH + CO₂ → MHCO₃ (Na, K) | My choice. NaHCO₃ is in 7th grade tests (baking soda) |
-| 3 | 2MHCO₃ → M₂CO₃ + H₂O + CO₂ (Na, K) | Source for NaHCO₃: 7th grade project on sodium bicarbonate (vasilaprilov.com); not verified in a textbook |
-| 3 | M₂CO₃ + 2HX → 2MX + H₂O + CO₂ | Source: regional olympiad, 7th grade (Na₂CO₃ + HCl, asks to write and balance) |
-| 3 | AgNO₃ + HX → AgX + HNO₃ (Cl, Br, I) | Source: Просвета lesson 36 and Булвест exercise (halide test with AgNO₃, coloured precipitates) |
-| 3 | AgNO₃ + MX → AgX + MNO₃ (Cl, Br, I) | Source: same lessons (NaCl, KCl solutions + AgNO₃) |
-| 3 | X₂ + 2MY → 2MX + Y₂ (X more active than Y) | My choice. Halogen displacement, activity F > Cl > Br > I. Not confirmed for 7th grade |
+| Combination/decomposition | 4M + O₂ → 2M₂O (Li, Na) | Source for Na (scheme 1). Li: pattern |
+| Combination/decomposition | 2M + O₂ → M₂O₂ (K, Rb, Cs) | My choice. Not in a 7th grade source; added so the more reactive alkali metals don't reuse the Na₂O-style oxide. Real chemistry (docs/SCIENCE.md), simplified to peroxide rather than superoxide |
+| Combination/decomposition | 2M₂O₂ → 2M₂O + O₂ (K, Rb, Cs) | My choice, pattern with 2HgO → 2Hg + O₂ below (thermal decomposition) |
+| Combination/decomposition | 2M + X₂ → 2MX | Source for Na + Cl₂ (scheme 1); Li + Cl₂ in Просвета. Other combinations: pattern |
+| Combination/decomposition | H₂ + X₂ → 2HX | Source for H₂ + Cl₂ (scheme 2, Булвест exercise). Others: pattern |
+| Combination/decomposition | M₂O + H₂O → 2MOH | Source for Na₂O (scheme 1). Others: pattern |
+| Combination/decomposition | 2H₂ + O₂ → 2H₂O | Source (equations lesson) |
+| Combination/decomposition | N₂ + 3H₂ → 2NH₃ | Source (equations lesson, РИО Бургас worksheet) |
+| Combination/decomposition | 2HgO → 2Hg + O₂ | Source (Просвета test) |
+| Substitution/neutralisation | 2M + 2H₂O → 2MOH + H₂ | Source for Na (scheme 1; Просвета test). Others: pattern |
+| Substitution/neutralisation | MOH + HX → MX + H₂O | Source for NaOH + HCl (scheme 1) and KOH + HCl (Булвест). Others: pattern |
+| Substitution/neutralisation | M₂O + 2HX → 2MX + H₂O | Pattern (basic oxide + acid → salt + water). No exact source found |
+| Substitution/neutralisation | 4Al + 3O₂ → 2Al₂O₃ | Source (equations lesson) |
+| Substitution/neutralisation | 4P + 5O₂ → 2P₂O₅ | Source (Просвета test) |
+| Substitution/neutralisation | 2Al + 6HCl → 2AlCl₃ + 3H₂ | My choice. Pattern: Mg + 2HCl → MgCl₂ + H₂ in student worksheets |
+| Substitution/neutralisation | Ca(OH)₂ + 2HCl → CaCl₂ + 2H₂O | My choice. Pattern: NaOH/KOH + HCl. Only formula with brackets |
+| Chlorine/carbonates/qualitative | X₂ + H₂O → HX + HXO (Cl, Br) | Source for Cl₂ (scheme 2). Br: pattern. HClO and other oxygen acids of halogens appear in Просвета lesson 36 |
+| Chlorine/carbonates/qualitative | X₂ + 2MOH → MX + MXO + H₂O (Cl, Br) | Source for Cl₂ + NaOH (scheme 2). Other combinations: pattern |
+| Chlorine/carbonates/qualitative | 2MOH + CO₂ → M₂CO₃ + H₂O | My choice. 7th grade tests do cover Na₂CO₃ (soda) and NaHCO₃; the reaction itself is a pattern |
+| Chlorine/carbonates/qualitative | M₂O + CO₂ → M₂CO₃ | My choice (same as above) |
+| Chlorine/carbonates/qualitative | MOH + CO₂ → MHCO₃ (Na, K) | My choice. NaHCO₃ is in 7th grade tests (baking soda) |
+| Chlorine/carbonates/qualitative | 2MHCO₃ → M₂CO₃ + H₂O + CO₂ (Na, K) | Source for NaHCO₃: 7th grade project on sodium bicarbonate (vasilaprilov.com); not verified in a textbook |
+| Chlorine/carbonates/qualitative | M₂CO₃ + 2HX → 2MX + H₂O + CO₂ | Source: regional olympiad, 7th grade (Na₂CO₃ + HCl, asks to write and balance) |
+| Chlorine/carbonates/qualitative | AgNO₃ + HX → AgX + HNO₃ (Cl, Br, I) | Source: Просвета lesson 36 and Булвест exercise (halide test with AgNO₃, coloured precipitates) |
+| Chlorine/carbonates/qualitative | AgNO₃ + MX → AgX + MNO₃ (Cl, Br, I) | Source: same lessons (NaCl, KCl solutions + AgNO₃) |
+| Chlorine/carbonates/qualitative | X₂ + 2MY → 2MX + Y₂ (X more active than Y) | My choice. Halogen displacement, activity F > Cl > Br > I. Not confirmed for 7th grade |
 
 ## Element coverage
 
@@ -84,4 +87,4 @@ with a neighbouring substance. "My choice" = fits the topics but I found no matc
 ## What still has to be done by a human
 
 Open the school textbook, compare with the table, and ask the teacher about every row marked "My choice" or
-"pattern". Anything the class has not covered can be removed from `TEMPLATES`, or its level changed.
+"pattern". Anything the class has not covered can be removed from `TEMPLATES`.

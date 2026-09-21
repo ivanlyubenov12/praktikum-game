@@ -1,8 +1,8 @@
 # Content editor
 
 A screen inside `index.html` (open **Редактор на съдържание** from the start screen) that lets a player or
-teacher change every piece of game content without touching code: level names, scoring, element colours, and
-the equations themselves (add, edit, delete — built-in ones included).
+teacher change every piece of game content without touching code: scoring, element colours, and the
+equations themselves (add, edit, delete — built-in ones included).
 
 ## Why this design
 
@@ -12,28 +12,26 @@ in the browser via `localStorage` and portable via export/import of a JSON file.
 
 ## Data model
 
-Built-in content stays exactly as it always was: `TEMPLATES`, `LEVELS`, `PER_LEVEL`, `COLORS` in `index.html`,
-unchanged and still fully checked by `tools/validate.js`. Nothing the editor does can corrupt this — it's read,
-never written.
+Built-in content stays exactly as it always was: `TEMPLATES`, `COLORS` in `index.html`, unchanged and still
+fully checked by `tools/validate.js`. Nothing the editor does can corrupt this — it's read, never written.
 
 A second object, `custom`, holds everything the player has changed:
 
 ```js
 {
-  templates: [ {id, lvl, left, right, sol, vars, noteTpl}, ... ],  // additions AND overrides (matched by id)
-  deletedIds: ['some-builtin-id', ...],                            // built-in templates to hide
-  levels: [...] | null,       // replaces LEVELS wholesale, or null = use default
-  perLevel: [...] | null,     // replaces PER_LEVEL wholesale, or null = use default
+  templates: [ {id, left, right, sol, vars, noteTpl}, ... ],  // additions AND overrides (matched by id)
+  deletedIds: ['some-builtin-id', ...],                       // built-in templates to hide
   colors: {El: '#hex', ...},  // merged on top of COLORS
   scoring: {base, mistake, hint, maxCoef}  // merged on top of SCORING_DEFAULT
 }
 ```
 
 `custom` is loaded from `localStorage` (key `balans_custom_v1`) on page load and saved back after every edit.
-`rebuildActive()` merges it with the built-in defaults into the four globals the rest of the game actually
-reads: `ACTIVE_TEMPLATES`, `ACTIVE_LEVELS`, `ACTIVE_PER_LEVEL`, `ACTIVE_COLORS`, `ACTIVE_SCORING`. Every runtime
-function (`generateSet`, `loadEq`, `renderCounter`, `check`, `hint`, ...) reads the `ACTIVE_*` versions, never
-the raw defaults directly — see `docs/ARCHITECTURE.md`.
+`rebuildActive()` merges it with the built-in defaults into the globals the rest of the game actually reads:
+`ACTIVE_TEMPLATES`, `ACTIVE_COLORS`, `ACTIVE_SCORING`. Every runtime function (`generateSet`, `loadEq`,
+`renderCounter`, `check`, `hint`, ...) reads the `ACTIVE_*` versions, never the raw defaults directly — see
+`docs/ARCHITECTURE.md`. There are no levels: `generateSet` samples `GAME_LENGTH` equations at random from the
+whole `ACTIVE_TEMPLATES` pool, so the editor has nothing level-related to expose.
 
 Editing a template whose `id` matches a built-in one **overrides** it (the built-in stays in the code, just
 hidden behind the override); a new `id` (auto-generated as `custom-<timestamp36>`) **adds** one. Deleting a

@@ -11,7 +11,7 @@ Checks:
 - every template × every allowed metal/halogen combination (168 concrete equations): balances with the stored
   coefficients, smallest whole numbers, note text contains no `undefined` or leftover `{}`;
 - every element used in a formula has a colour (for the atom-count table's chip);
-- `generateSet()` for 500 seeds: 12 equations, 4 per level, no duplicate equations, same seed gives same result.
+- `generateSet()` for 500 seeds: 12 equations, no duplicate equations, same seed gives same result.
 
 Exit code 0 = OK. Run it after every change to `TEMPLATES`, `COLORS` or the generator.
 If a template becomes invalid for some element, the output names the template and the element combination.
@@ -103,13 +103,13 @@ Appearance and access
 - After the last equation there is no way to review individual answers, only the list of equations that caused
   trouble.
 - No game-progress persistence: reloading mid-game restarts the current game from scratch. Content edits
-  (equations, levels, scoring, colours) do persist across reloads via `localStorage` — that's the editor, a
-  separate thing from game progress.
+  (equations, scoring, colours) do persist across reloads via `localStorage` — that's the editor, a separate
+  thing from game progress.
 - The content editor's note-template tokens (`docs/EDITOR.md`) are simpler than what a hand-written JS `note`
   function can do; equations with more than two variables or an `ok` filter can't be added or edited through
   the UI at all, only deleted.
-- No per-level minimum-equation guard: deleting every template in a level through the editor makes that level
-  generate fewer than its configured count, silently.
+- No minimum-equation guard: deleting templates through the editor down to fewer than `GAME_LENGTH` makes
+  every game generate fewer equations than usual, silently.
 
 ## Ideas, roughly in order of value for the seminar
 
@@ -120,7 +120,7 @@ Appearance and access
 4. Timer mode or streak bonus.
 5. Save best score in `localStorage` with a try/catch fallback.
 6. More templates: `2M + S → M₂S`, `2M + H₂ → 2MH`, `Fe + X₂` (X = F, Cl, Br), Mg reactions.
-7. ~~Teacher mode: choose which equations to include.~~ Done via the content editor (delete/add per level).
+7. ~~Teacher mode: choose which equations to include.~~ Done via the content editor (delete/add equations).
    Still missing: exporting play *results* (scores, not content) for a teacher to review.
 8. Split `index.html` into `index.html`, `style.css`, `game.js` once it grows beyond what one person can
    explain in a seminar. Getting more relevant now that the editor has roughly doubled the file's size.
