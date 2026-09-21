@@ -4,7 +4,16 @@ One file, `index.html`. No modules. Everything is global inside a single `<scrip
 
 ## Screens
 
-`show(id)` toggles the `hidden` class on `#start`, `#game`, `#end`.
+`show(id)` toggles the `hidden` class on `#start`, `#game`, `#end`, `#editor`.
+
+## Custom content layer
+
+`TEMPLATES`/`LEVELS`/`PER_LEVEL`/`COLORS` (below) are the built-in defaults and stay exactly as authored —
+`tools/validate.js` checks them and only them. What the game actually plays is `ACTIVE_TEMPLATES` /
+`ACTIVE_LEVELS` / `ACTIVE_PER_LEVEL` / `ACTIVE_COLORS` / `ACTIVE_SCORING`, computed by `rebuildActive()` as
+the defaults with the player's `custom` overrides (from `localStorage`, editable via the **Редактор на
+съдържание** screen) layered on top. Every runtime function reads the `ACTIVE_*` globals. Full design,
+including the note-template token language custom equations use instead of a JS function: `docs/EDITOR.md`.
 
 ## Equation templates
 
@@ -34,12 +43,15 @@ equation `{id, lvl, left, right, sol, note, vars}`.
 
 ## Generator
 
-`generateSet(seed)` (seeded PRNG `mulberry32`, deterministic):
+`generateSet(seed)` (seeded PRNG `mulberry32`, deterministic), reading `ACTIVE_TEMPLATES`/`ACTIVE_PER_LEVEL`:
 
-1. For each level (`PER_LEVEL = [4,4,4]`): take the templates of that level.
+1. For each level (`ACTIVE_PER_LEVEL`, `[4,4,4]` by default): take the templates of that level.
 2. Pick 2 templates that have at least one coefficient > 1 (so a level is never all "1 + 1 → 1 + 1"), then fill
-   up to 4 with other templates of the level, all distinct.
+   up to the level's count with other templates of the level, all distinct.
 3. Shuffle inside the level; for each template pick one random allowed substitution.
+
+If the player has deleted every template in a level through the editor, that level simply generates fewer
+equations — this doesn't crash, but isn't checked or prevented either.
 
 `startGame()` calls `generateSet(nextSeed())`. Seed comes from `?seed=N` in the URL (then N, N+1, … for each new
 game) or `Math.random()`. The end screen prints the seed.
@@ -59,7 +71,7 @@ Globals: `let EQS, idx, coefs, score, mistakes, hints, solved, wrong, currentSee
 |---|---|
 | `EQS` | The 12 concrete equations of the current game |
 | `idx` | Current equation index in `EQS` |
-| `coefs` | Current player coefficients (same order as `sol`), each 0..`MAXC` (10); every equation starts all-0 |
+| `coefs` | Current player coefficients (same order as `sol`), each 0..`ACTIVE_SCORING.maxCoef` (10 by default); every equation starts all-0 |
 | `score` | Total points from solved equations only |
 | `mistakes` / `hints` | Wrong checks / hints used on the current equation |
 | `solved` | Current equation solved (locks +/− buttons) |
@@ -73,7 +85,7 @@ startGame → generateSet → loadEq (scrolls to top) → render (→ renderCoun
    Провери → check():
         not balanced        → mistakes++, message, shake
         balanced, not gcd 1 → warning, no penalty
-        balanced + simplest → solved, score += max(0, 100 - 25*hints - 10*mistakes), show note
+        balanced + simplest → solved, score += max(0, ACTIVE_SCORING.base - hints*hintPenalty - mistakes*mistakePenalty), show note
    Подсказка → hint(): set first wrong coefficient to the correct value, hints++;
                         if every coefficient already matches sol (only possible by setting them all by
                         hand — coefs start at 0, sol is never 0), show an "already correct" message
@@ -98,7 +110,7 @@ It re-creates DOM on every click; that is fine at this size.
 ## Theming and accessibility
 
 CSS custom properties on `:root`, dark variants under `prefers-color-scheme: dark` and `[data-theme]`.
-Element colours live in JS (`COLORS`); the counter table's chip reuses them.
+Element colours live in JS (`COLORS`, overridable via `ACTIVE_COLORS`); the counter table's chip reuses them.
 Icons are the self-hosted Material Icons webfont (`.material-icons` ligature spans), always paired with a
 Bulgarian text label.
 Buttons have `aria-label`s, focus outlines are visible, motion respects `prefers-reduced-motion`.
@@ -106,5 +118,7 @@ Buttons have `aria-label`s, focus outlines are visible, motion respects `prefers
 ## Validation
 
 `tools/validate.js` extracts the data section of the script (everything above the `/* ---------- състояние`
-marker), evaluates it in a Node VM (no DOM), and checks every template × every allowed substitution. See
-`docs/TESTING-AND-ROADMAP.md`.
+marker), evaluates it in a Node VM (no DOM), and checks every built-in template × every allowed substitution.
+See `docs/TESTING-AND-ROADMAP.md`. Player-added/edited equations from the content editor have no Node-side
+check (they don't exist until runtime) — the editor runs the same balance/smallest-coefficient logic in the
+browser instead; see `docs/EDITOR.md`.

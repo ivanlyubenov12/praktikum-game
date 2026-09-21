@@ -15,6 +15,8 @@ Checks:
 
 Exit code 0 = OK. Run it after every change to `TEMPLATES`, `COLORS` or the generator.
 If a template becomes invalid for some element, the output names the template and the element combination.
+This only checks the built-in defaults — equations added or edited at runtime through the content editor are
+validated in the browser instead (same balance/smallest-coefficient logic); see `docs/EDITOR.md`.
 
 ## Manual checklist (needs a real browser)
 
@@ -44,6 +46,24 @@ Gameplay
 - [ ] Play all 12 equations of a few different seeds. Check especially: 2HgO, Al₂O₃, P₂O₅, Ca(OH)₂, carbonates (M₂CO₃, MHCO₃), AgNO₃, HClO / MClO.
 - [ ] End screen: score, grade icon and progress bar, list of equations with mistakes or hints, *Играй отново* resets everything.
 
+Content editor (see `docs/EDITOR.md`)
+- [ ] Open the editor from the start screen. Change "Точки за уравнение" to e.g. 50, tab away: the start
+  screen's rule text and the *Подсказка* button label update to match immediately.
+- [ ] Add a new equation (e.g. `2Mg + O₂ → 2MgO`, no `{M}`/`{X}`): Save is disabled until it balances with
+  smallest coefficients; the validation box explains why. Once saved, it appears in the equation list and can
+  be played (jump to it, or just keep playing seeds until it turns up).
+- [ ] Add an equation using `{M}` in a formula: a checkbox picker for allowed alkali metals appears
+  automatically; Save stays disabled until at least one is checked and every combination balances.
+- [ ] Edit a built-in equation's note. Play it: the new note shows instead of the original. Re-open the
+  editor: it's listed with the same id, not duplicated.
+- [ ] Try to edit `Cl₂ + LiBr → LiCl + Br₂` (halogen displacement, 3 variables): the Edit button is disabled
+  with a tooltip; Delete still works.
+- [ ] Delete a built-in equation, reload the page (fresh tab, same browser): it's still gone — confirms
+  `localStorage` persistence, not just in-memory state.
+- [ ] Изтегли (export), then Първоначални (reset) — confirm the editor goes back to only built-in content —
+  then Качи файл (import) the exported file: your changes come back exactly (including deletions).
+- [ ] Recolour an element (or add a brand-new one): the atom-count table's chip updates to match.
+
 Appearance and access
 - [ ] Dark mode (system setting): text readable, cards visible, atom colours distinguishable.
 - [ ] Keyboard: Tab reaches every button, focus ring visible, Enter/Space works.
@@ -70,15 +90,26 @@ Appearance and access
   Chromium screenshots: the atom-count table (grey/pending, unbalanced, balanced states, a multi-element
   equation, light and dark mode); the Material Icons font and score redesign (start screen, a wrong check, an
   already-solved-by-hand equation including the *Подсказка* no-op message, the solved state, both end-screen
-  grade tiers, dark mode); the scroll-to-top fix on *Напред*. Still need a real device/browser pass: keyboard
-  navigation and phone-width layout.
+  grade tiers, dark mode); the scroll-to-top fix on *Напред*. The content editor: adding a fixed equation
+  (Save disabled while unbalanced, enabled once correct), adding one with `{M}` (checkbox picker appears,
+  validates per-combination), editing a built-in equation's note and playing the override, the
+  disabled-Edit guard on the 3-variable template, live scoring-text propagation to the start screen and hint
+  button, delete + reload persistence, and a full export → reset → import round-trip. Still need a real
+  device/browser pass: keyboard navigation and phone-width layout (including the editor's forms).
 - Coefficients are capped at 10 and cannot go below 0.
 - Colour is the only element label in the atom-count table's chip; teal (Cs) and green (Cl) or lavender (Li)
   and violet (I) may look close on some screens — the element symbol text next to each chip is the fallback.
 - Halogen displacement, MOH + CO₂ and M₂O + HX are not confirmed for 7th grade (see `docs/CURRICULUM.md`).
 - After the last equation there is no way to review individual answers, only the list of equations that caused
   trouble.
-- No persistence: reloading the page restarts the game.
+- No game-progress persistence: reloading mid-game restarts the current game from scratch. Content edits
+  (equations, levels, scoring, colours) do persist across reloads via `localStorage` — that's the editor, a
+  separate thing from game progress.
+- The content editor's note-template tokens (`docs/EDITOR.md`) are simpler than what a hand-written JS `note`
+  function can do; equations with more than two variables or an `ok` filter can't be added or edited through
+  the UI at all, only deleted.
+- No per-level minimum-equation guard: deleting every template in a level through the editor makes that level
+  generate fewer than its configured count, silently.
 
 ## Ideas, roughly in order of value for the seminar
 
@@ -89,6 +120,7 @@ Appearance and access
 4. Timer mode or streak bonus.
 5. Save best score in `localStorage` with a try/catch fallback.
 6. More templates: `2M + S → M₂S`, `2M + H₂ → 2MH`, `Fe + X₂` (X = F, Cl, Br), Mg reactions.
-7. Teacher mode: choose which equations to include; export results.
+7. ~~Teacher mode: choose which equations to include.~~ Done via the content editor (delete/add per level).
+   Still missing: exporting play *results* (scores, not content) for a teacher to review.
 8. Split `index.html` into `index.html`, `style.css`, `game.js` once it grows beyond what one person can
-   explain in a seminar. Not needed now.
+   explain in a seminar. Getting more relevant now that the editor has roughly doubled the file's size.

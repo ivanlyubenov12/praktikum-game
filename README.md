@@ -8,6 +8,10 @@ shows atom counts left vs right as you adjust coefficients.
 **Every game is different.** Equations come from templates, and the alkali metal (Li, Na, K, Rb, Cs) and the
 halogen (F, Cl, Br, I) are chosen at random. 12 equations per game, 3 levels.
 
+**All of it is editable in the app itself.** Open **Редактор на съдържание** from the start screen to add,
+edit or delete equations (built-in ones included), rename levels, change scoring, or recolour elements — no
+code editing needed. See `docs/EDITOR.md`.
+
 Built as a school project (NOIT 2025/2026, task 2: a computer game for revision of a chemistry topic).
 
 ## Run it
@@ -31,7 +35,7 @@ gets a random seed, and the end screen shows it.
   green = equal, red = different, each with a proportional bar per side.
 - **Провери** checks the answer. **Подсказка** fixes one wrong coefficient.
 - Coefficients must be the smallest whole numbers (2, 2, 4 is rejected even though it balances).
-- Score: max 100 per equation, −10 per wrong check, −25 per hint. Max 1200.
+- Score: max 100 per equation, −10 per wrong check, −25 per hint. Max 1200. (All editable — see below.)
 
 ## Levels
 
@@ -54,6 +58,7 @@ gets a random seed, and the end screen shows it.
 | `CLAUDE.md` | Instructions and conventions for Claude Code. |
 | `SEMINAR.md` | Демо сценарий и възможни въпроси (на български). |
 | `docs/ARCHITECTURE.md` | Code structure, templates, generator, state, scoring. |
+| `docs/EDITOR.md` | The in-app content editor: data model, note-template tokens, limits. |
 | `docs/CURRICULUM.md` | Which equations, where they come from, what is unverified. |
 | `docs/SCIENCE.md` | The chemistry behind each reaction, exclusions and simplifications. |
 | `docs/TESTING-AND-ROADMAP.md` | Manual test checklist, known gaps, ideas. |

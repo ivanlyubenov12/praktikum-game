@@ -20,22 +20,32 @@ halogens. Read `README.md` first, then the relevant file in `docs/`.
   reaction needs different coefficients for different elements, it needs separate templates.
 - The user is a student presenting this at a school seminar. Keep the code readable and explainable.
   Prefer simple and obvious over clever.
+- **`TEMPLATES`/`LEVELS`/`PER_LEVEL`/`COLORS` are defaults, not what the game actually plays.** The in-app
+  content editor (`docs/EDITOR.md`) layers player edits from `localStorage` on top of them into
+  `ACTIVE_TEMPLATES`/`ACTIVE_LEVELS`/`ACTIVE_PER_LEVEL`/`ACTIVE_COLORS`/`ACTIVE_SCORING`. **Runtime code must
+  read the `ACTIVE_*` globals, never the defaults directly** — `generateSet`, `loadEq`, `renderCounter`,
+  `check`, `hint`, `updateScore`, `finish` all do this already. New runtime code should too.
 
 ## Where things are (in `index.html`)
 
 1. `<style>`: CSS variables (light/dark), layout, icon font.
-2. HTML: three sections `#start`, `#game`, `#end`.
+2. HTML: four sections `#start`, `#game`, `#end`, `#editor`.
 3. `<script>` block, in order:
-   data (`COLORS`, name tables, `LEVELS`, `TEMPLATES`) → helpers (`parse`, `pretty`, `eqText`) →
-   generator (`generateSet` etc.) → `/* състояние */` game state and flow → event wiring.
+   data (`COLORS`, name tables, `LEVELS`, `TEMPLATES`) → helpers (`parse`, `pretty`, `eqText`) → the
+   custom-content layer (`custom`, `rebuildActive()`, `ACTIVE_*`, see `docs/EDITOR.md`) → generator
+   (`generateSet` etc.) → `/* състояние */` game state and flow → editor UI functions → event wiring.
    `tools/validate.js` relies on the `/* ---------- състояние` marker and on everything above it having no
    DOM dependencies: **do not reference `document` or `window` (beyond `matchMedia`) above that marker.**
+   `loadCustom()`'s `localStorage` access is wrapped in try/catch for this reason — it throws (caught, falls
+   back to empty) inside `tools/validate.js`'s Node VM, which has no `localStorage`.
 
 ## Common tasks
 
 - **Add an equation:** add a template to `TEMPLATES` (see `docs/ARCHITECTURE.md`). New element → add it to
-  `COLORS` (used by the atom-count table's chip).
-- **Change scoring:** `check()`, `hint()`, `updateScore()`.
+  `COLORS` (used by the atom-count table's chip). Players can also add/edit equations at runtime without
+  touching code — see `docs/EDITOR.md`.
+- **Change scoring:** the *defaults* are `SCORING_DEFAULT`; `check()`, `hint()`, `updateScore()`, `finish()`
+  read `ACTIVE_SCORING`, which the editor can override.
 
 ## Before you finish any change
 
