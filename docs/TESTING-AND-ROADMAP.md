@@ -78,6 +78,11 @@ Appearance and access
   the card). Different equations will naturally center at different horizontal positions since they have
   different numbers/lengths of terms — that's expected. When it doesn't fit, `justify-content: safe center`
   falls back to left-aligned so the first term is never scrolled out of reach on the left.
+- [ ] When the equation row overflows, the edge(s) with more content fade into the card background (a soft
+  gradient, `#eqScroll`'s `scroll-left`/`scroll-right` classes, toggled by `updateEqFade()`), so the row not
+  being fully visible is obvious even before you touch it. Only the right edge fades at the start (more
+  content to the right), only the left edge fades once fully scrolled, both fade in the middle, and a row
+  that fits entirely shows neither.
 - [ ] Compare a term with no subscript (e.g. `Na`, `Al`) next to one with a subscript (e.g. `O₂`) in the same
   equation: their letters sit on the same line, and the `+` / `→` between terms lines up with those letters
   too — not higher or lower.

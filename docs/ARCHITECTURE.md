@@ -107,6 +107,12 @@ colour chip, a proportional bar per side and a badge). A row is grey/"—" (`row
 to 0 for that element (nothing entered yet on either side), green/✓ once both sides match, red/✗ otherwise.
 It re-creates DOM on every click; that is fine at this size.
 
+`render()` also calls `updateEqFade()`, which toggles `scroll-left`/`scroll-right` classes on `#eqScroll`
+(the wrapper around `#eq`) based on `#eq`'s `scrollLeft`/`scrollWidth`/`clientWidth`. Those classes drive a
+CSS gradient that fades the overflowing edge(s) into the card background, so a scrollable equation row is
+visibly cut off instead of just ending. `#eq`'s own `scroll` listener and a `window` `resize` listener (wired
+once, at the bottom of the script) keep it in sync as the player scrolls or rotates the device.
+
 ## Theming and accessibility
 
 CSS custom properties on `:root`, dark variants under `prefers-color-scheme: dark` and `[data-theme]`.

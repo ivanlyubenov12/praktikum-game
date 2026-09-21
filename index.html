@@ -76,6 +76,12 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .eqcount{font-weight:700;color:var(--accent)}
 
 /* equation */
+.eqscroll{position:relative}
+.eqscroll::before,.eqscroll::after{content:'';position:absolute;top:0;bottom:0;width:28px;pointer-events:none;opacity:0;transition:opacity .15s}
+.eqscroll::before{left:0;background:linear-gradient(to right,var(--card),transparent)}
+.eqscroll::after{right:0;background:linear-gradient(to left,var(--card),transparent)}
+.eqscroll.scroll-left::before{opacity:1}
+.eqscroll.scroll-right::after{opacity:1}
 .eq{display:flex;flex-wrap:nowrap;align-items:flex-end;justify-content:safe center;gap:10px 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px}
 .term{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
 .ctrl{display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -196,7 +202,9 @@ ul.wrong{padding-left:18px;margin:6px 0}
     <div class="bar"><i id="prog"></i></div>
 
     <div class="card">
-      <div class="eq" id="eq" aria-label="Химично уравнение"></div>
+      <div class="eqscroll" id="eqScroll">
+        <div class="eq" id="eq" aria-label="Химично уравнение"></div>
+      </div>
     </div>
 
     <div class="card">
@@ -520,6 +528,14 @@ function render(){
     render();
   });
   renderCounter();
+  updateEqFade();
+}
+
+// Показва избледняващ ръб от страната, в която уравнението има още скрито съдържание за скролване.
+function updateEqFade(){
+  const eq=$('eq'), wrap=$('eqScroll');
+  wrap.classList.toggle('scroll-left', eq.scrollLeft>2);
+  wrap.classList.toggle('scroll-right', eq.scrollLeft < eq.scrollWidth-eq.clientWidth-2);
 }
 
 function totals(){
@@ -906,6 +922,8 @@ $('btnExport').onclick=exportCustom;
 $('btnImportBtn').onclick=()=>$('btnImport').click();
 $('btnImport').onchange=e=>{ if(e.target.files[0]) importCustomFile(e.target.files[0]); e.target.value=''; };
 $('btnResetCustom').onclick=resetCustom;
+$('eq').addEventListener('scroll', updateEqFade, {passive:true});
+window.addEventListener('resize', updateEqFade);
 renderScoringText();
 </script>
 </body>
