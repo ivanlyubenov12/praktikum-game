@@ -141,6 +141,7 @@ ul.wrong{padding-left:18px;margin:6px 0}
 .stat span{color:var(--muted);font-size:.82rem;font-weight:600}
 .rulenote{display:flex;align-items:center;gap:8px;font-size:.85rem;margin:2px 0 0}
 .rulenote .material-icons{color:var(--accent);font-size:1.1em}
+.divider{border:none;border-top:1px solid var(--line);margin:16px 0}
 .controlhelp{display:flex;flex-direction:column;gap:8px;margin:14px 0}
 .controlhelprow{display:flex;align-items:center;gap:10px;font-size:.92rem}
 .ctrlsample{width:40px;min-height:36px;padding:0;font-size:1.15rem;font-weight:700;line-height:1;pointer-events:none;flex:0 0 auto}
@@ -190,21 +191,23 @@ ul.wrong{padding-left:18px;margin:6px 0}
         <span class="material-icons" aria-hidden="true">balance</span>
         <div>
           <h1>Баланс</h1>
-          <p class="muted" style="margin:0">Игра за уравняване на химични уравнения</p>
+          <p class="muted" style="margin:0">Игра за изравняване на химични уравнения</p>
         </div>
       </div>
-      <p>Уравнението е вярно, когато броят атоми на всеки елемент отляво и отдясно съвпада — променяй коефициентите пред формулите, докато всички редове в таблицата станат зелени. Темите са от 7. клас: алкални метали и техните съединения, халогени, киселини и основи, карбонати.</p>
+      <p>Уравнението е вярно, когато броят атоми на всеки елемент отляво и отдясно съвпада — променяй коефициентите пред формулите, докато всички редове в таблицата станат зелени.</p>
+      <hr class="divider">
+      <h2><span class="material-icons" aria-hidden="true">info</span>Как се играе</h2>
       <div class="controlhelp">
         <div class="controlhelprow"><button type="button" class="ctrlsample" tabindex="-1" aria-hidden="true">+</button><span>Увеличава коефициента пред формулата.</span></div>
         <div class="controlhelprow"><button type="button" class="ctrlsample" tabindex="-1" aria-hidden="true">−</button><span>Намалява коефициента пред формулата.</span></div>
       </div>
+      <p class="muted rulenote"><span class="material-icons" aria-hidden="true">calculate</span>Коефициентите трябва да са най-малките възможни цели числа.</p>
       <div class="statgrid">
         <div class="stat"><span class="material-icons" aria-hidden="true">list_alt</span><b id="statTotal">12</b><span>уравнения</span></div>
         <div class="stat"><span class="material-icons" aria-hidden="true">star</span><b id="statMax">100</b><span>макс. точки за уравнение</span></div>
         <div class="stat"><span class="material-icons" aria-hidden="true">remove_circle</span><b id="statMistake">−10</b><span>за грешна проверка</span></div>
         <div class="stat"><span class="material-icons" aria-hidden="true">lightbulb</span><b id="statHint">−25</b><span>за подсказка</span></div>
       </div>
-      <p class="muted rulenote"><span class="material-icons" aria-hidden="true">calculate</span>Коефициентите трябва да са най-малките възможни цели числа.</p>
       <div class="actions"><button class="primary" id="btnStart"><span class="material-icons" aria-hidden="true">play_arrow</span>Започни</button></div>
       <div style="text-align:center;margin-top:10px">
         <button class="linklike" id="btnEditor"><span class="material-icons" aria-hidden="true" style="font-size:1em">tune</span>Редактор на съдържание</button>
@@ -600,7 +603,7 @@ function check(){
   if(!isBalanced()){
     mistakes++;
     updateScore();
-    fb.innerHTML=`<div class="msg bad"><span class="material-icons" aria-hidden="true">cancel</span><span>Не е уравнено. Сивите редове показват елементи, за които още не си избрал коефициент; червените – къде броят атоми е различен. (−${s.mistake} от точките за това уравнение)</span></div>`;
+    fb.innerHTML=`<div class="msg bad"><span class="material-icons" aria-hidden="true">cancel</span><span>Не е изравнено. Сивите редове показват елементи, за които още не си избрал коефициент; червените – къде броят атоми е различен. (−${s.mistake} от точките за това уравнение)</span></div>`;
     $('eq').classList.remove('shake'); void $('eq').offsetWidth; $('eq').classList.add('shake');
     return;
   }

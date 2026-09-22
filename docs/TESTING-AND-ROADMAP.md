@@ -27,7 +27,7 @@ Load
 
 Gameplay
 - [ ] Open `index.html?seed=42`. First equation is `4Na + O₂ → 2Na₂O`, all three coefficients start at 0 and
-  every row in the table is grey. Press *Провери* immediately: red message ("не е уравнено"), no green rows yet.
+  every row in the table is grey. Press *Провери* immediately: red message ("не е изравнено"), no green rows yet.
 - [ ] Press + on Na twice → coefficient shows 2, the Na row switches from grey to red (2 vs 2Na₂O's 4, still
   unequal) since the other terms are still 0.
 - [ ] Reach 4, 1, 2: table all green.
