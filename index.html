@@ -141,6 +141,9 @@ ul.wrong{padding-left:18px;margin:6px 0}
 .stat span{color:var(--muted);font-size:.82rem;font-weight:600}
 .rulenote{display:flex;align-items:center;gap:8px;font-size:.85rem;margin:2px 0 0}
 .rulenote .material-icons{color:var(--accent);font-size:1.1em}
+.controlhelp{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.controlhelprow{display:flex;align-items:center;gap:10px;font-size:.92rem}
+.ctrlsample{width:40px;min-height:36px;padding:0;font-size:1.15rem;font-weight:700;line-height:1;pointer-events:none;flex:0 0 auto}
 .gradeicon{margin:4px 0}
 .gradeicon .material-icons{font-size:2.6rem}
 .gradeicon.tier-great .material-icons{color:var(--ok)}
@@ -190,7 +193,11 @@ ul.wrong{padding-left:18px;margin:6px 0}
           <p class="muted" style="margin:0">Игра за уравняване на химични уравнения</p>
         </div>
       </div>
-      <p>Уравнението е вярно, когато броят атоми на всеки елемент отляво и отдясно съвпада — променяй коефициентите пред формулите, докато всички редове в таблицата станат зелени. Темите са от 7. клас: алкални метали и техните съединения, халогени, киселини и основи, карбонати. Металът и халогенът се сменят случайно във всяка игра.</p>
+      <p>Уравнението е вярно, когато броят атоми на всеки елемент отляво и отдясно съвпада — променяй коефициентите пред формулите, докато всички редове в таблицата станат зелени. Темите са от 7. клас: алкални метали и техните съединения, халогени, киселини и основи, карбонати.</p>
+      <div class="controlhelp">
+        <div class="controlhelprow"><button type="button" class="ctrlsample" tabindex="-1" aria-hidden="true">+</button><span>Увеличава коефициента пред формулата.</span></div>
+        <div class="controlhelprow"><button type="button" class="ctrlsample" tabindex="-1" aria-hidden="true">−</button><span>Намалява коефициента пред формулата.</span></div>
+      </div>
       <div class="statgrid">
         <div class="stat"><span class="material-icons" aria-hidden="true">list_alt</span><b id="statTotal">12</b><span>уравнения</span></div>
         <div class="stat"><span class="material-icons" aria-hidden="true">star</span><b id="statMax">100</b><span>макс. точки за уравнение</span></div>
