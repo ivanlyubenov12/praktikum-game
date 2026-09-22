@@ -51,20 +51,63 @@ deleting one added in the current layer just drops it from `templates`.
 ## Publishing
 
 Editing in the browser only ever touches the local `custom` layer (`localStorage`) — nobody else sees it until
-you publish:
+you publish, one of two ways:
+
+### One click, from the editor
+
+The **Публикуване** card has a **Публикувай в GitHub** button once a token is saved:
+
+1. Generate a GitHub fine-grained personal access token: github.com → Settings → Developer settings →
+   Personal access tokens → Fine-grained tokens → Generate new. Repository access: only
+   `ivanlyubenov12/praktikum-game`. Permissions: **Contents → Read and write**, nothing else. Pick whatever
+   expiration you like.
+2. Paste it into the token field and click **Запази токена** — saved to this browser's `localStorage`
+   (`GH_TOKEN_KEY`), never sent anywhere except `api.github.com`.
+3. Click **Публикувай в GitHub**. `doGhPublish()` (`index.html`, below the `/* ---------- състояние` marker)
+   GETs the current `custom-content.json` from the GitHub Contents API for its `sha`, then PUTs the current
+   `custom` object as the new file content (UTF-8-safe base64 via `utf8ToBase64()`), committing directly to
+   `main`.
+4. GitHub Pages redeploys automatically; anyone who (re)loads the game now gets your content as the
+   `published` layer.
+
+The token lives only in that one browser — a different computer needs its own (copy the same PAT over, or
+generate a fresh one; either works). **Смени токена** clears it and reopens the entry field; **Изчисти
+токена** removes it after a confirmation.
+
+### Manual, from any computer
 
 1. Make your changes in the editor as usual.
 2. Click **Изтегли** to download the JSON.
-3. Replace `custom-content.json` at the repo root with that file, and commit + push it.
-4. GitHub Pages redeploys automatically; anyone who (re)loads the game now gets your content as the
-   `published` layer, merged under their own local `custom` overrides if they have any.
+3. Replace `custom-content.json` at the repo root with that file, and commit + push it (via `git`, or by
+   dragging the file onto its entry in the GitHub web UI).
+4. Same redeploy as above.
 
-This is the one deliberate exception to "no code editing needed" — publishing for everyone requires a git
-commit, not just clicking around the editor. A single browser's own local edits never need this step.
+Either path is the one deliberate exception to "no code editing needed" — publishing for everyone always ends
+in a git commit to `main`, whether the button makes it for you or you make it yourself. A single browser's own
+local edits never need either step.
 
 `custom-content.json` is deliberately excluded from `sw.js`'s cache (see `docs/ARCHITECTURE.md`) — every load
 fetches it live from the network, even on a device that's visited before, so a freshly published edit always
 shows up on the very next load. Never add it to `sw.js`'s `SHELL` array.
+
+## Security
+
+`published` is fetched over the network from `custom-content.json` — it's **untrusted input**, like any other
+network response, not merely "whatever the editor's own UI already allowed" (someone could hand-edit or
+otherwise corrupt that file before it's committed). Two consequences:
+
+- **Every formula, note, element symbol and colour that could come from `custom`/`published` is escaped**
+  before it reaches `innerHTML` or an HTML attribute — `escHtml()` for text/attributes, `safeColor()` for
+  colour values used in `style="background:...":`. Without this, a `custom-content.json` with a formula like
+  `Na<img src=x onerror=...>` would run arbitrary JS for every player who loads the game, not just whoever
+  authored it. See `render()`, `renderCounter()`, `renderEqList()`, `renderColorsForm()`, `check()`,
+  `validateForm()` in `index.html`, and the matching ground rule in `CLAUDE.md`.
+- **The GitHub PAT lives only in `localStorage`**, never in the page source, a commit, or
+  `custom-content.json` itself, and is sent only to `api.github.com`. Scoping it to just this repo with
+  `Contents: Read and write` when you generate it (see **Publishing** above) means a leaked token can't do
+  more than publish content here — still worth treating like any other credential, since the escaping above
+  is what stops a malicious `custom-content.json` from being able to steal it via injected JS in the first
+  place.
 
 ## The note-template mini-language
 
@@ -91,10 +134,11 @@ saving always replaces it with the token-template text.
   with its Edit button disabled and a tooltip explaining why. It can still be deleted.
 - **Arbitrary chemistry-note logic.** See the token language above — good enough for "X reacts with Y to give Z",
   not for prose that branches on which specific element was picked beyond simple substitution.
-- **Live multi-device sync.** Publishing (see above) is a manual git commit, not automatic — a change isn't
-  visible elsewhere until it's pushed and the page is reloaded. **Качи файл** (import) loads a JSON into the
-  current browser's local `custom` layer only, and replaces its customisations wholesale — it does not merge,
-  and it does not publish anything.
+- **Instant/automatic multi-device sync.** Publishing (see above) always ends in a git commit — even the
+  one-click button just makes that commit for you — so a change isn't visible elsewhere until that commit
+  lands and the page is reloaded there; nothing pushes updates to already-open tabs. **Качи файл** (import)
+  loads a JSON into the current browser's local `custom` layer only, and replaces its customisations
+  wholesale — it does not merge, and it does not publish anything.
 
 ## Validation
 

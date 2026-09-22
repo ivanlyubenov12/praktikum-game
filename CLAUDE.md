@@ -43,6 +43,17 @@ halogens. Read `README.md` first, then the relevant file in `docs/`.
 - **There are no levels.** Every game draws `GAME_LENGTH` (12) equations at random from the whole active
   template pool — there is no grouping, ordering, or per-group minimum. Don't reintroduce a `lvl` field on
   templates.
+- **Every string that can originate from `custom`/`published` (a formula, a note, an element symbol, a
+  colour) must go through `escHtml()` before it lands in `innerHTML` or an HTML attribute**, and every colour
+  value through `safeColor()` before a `style="background:...":` — `published` is fetched from the network, so
+  it's untrusted the same way any external input is, not just "whatever the local editor's own validation
+  already allowed." A crafted `custom-content.json` is a realistic attacker who never touches the editor UI at
+  all. New rendering code that displays a formula/note/element/colour must follow the pattern already used in
+  `render()`, `renderCounter()`, `renderEqList()`, `renderColorsForm()`, `check()`, `validateForm()`.
+- **The editor's "Публикувай в GitHub" button (`doGhPublish()`) stores a GitHub PAT in `localStorage`
+  (`GH_TOKEN_KEY`) and calls the GitHub Contents API directly from the browser.** Never log, display more than
+  the last 4 characters of, or send that token anywhere except `api.github.com`. Never bake a token into
+  `index.html`, a commit, or `custom-content.json` itself.
 
 ## Where things are (in `index.html`)
 
@@ -51,10 +62,12 @@ halogens. Read `README.md` first, then the relevant file in `docs/`.
    default; `init()` (bottom of the script) picks the real one once `custom-content.json` has been fetched
    (or shows `#offline` if that fetch throws).
 3. `<script>` block, in order:
-   data (`COLORS`, name tables, `TEMPLATES`) → helpers (`parse`, `pretty`, `eqText`) → the
-   custom-content layer (`custom`, `published`, `mergeLayer()`, `rebuildActive()`, `ACTIVE_*`, see
+   data (`COLORS`, name tables, `TEMPLATES`) → helpers (`parse`, `escHtml`, `safeColor`, `pretty`, `eqText`) →
+   the custom-content layer (`custom`, `published`, `mergeLayer()`, `rebuildActive()`, `ACTIVE_*`, see
    `docs/EDITOR.md`) → generator (`generateSet` etc.) → `/* състояние */` game state and flow → editor UI
-   functions → event wiring → `loadPublished()`/`init()` (the `fetch()` call and the `#offline` fallback).
+   functions (including the GitHub-publish block: `GH_TOKEN_KEY`/`doGhPublish()`/`renderGhPublish()`, right
+   after `resetCustom()`) → event wiring → `loadPublished()`/`init()` (the `fetch()` call and the `#offline`
+   fallback).
    `tools/validate.js` relies on the `/* ---------- състояние` marker and on everything above it having no
    DOM dependencies and no network calls: **do not reference `document`/`window` (beyond `matchMedia`), and
    do not call `fetch`, above that marker.** `loadCustom()`'s `localStorage` access is wrapped in try/catch
@@ -81,9 +94,13 @@ halogens. Read `README.md` first, then the relevant file in `docs/`.
 
 ## Do not
 
-- Do not add any network calls in `index.html` beyond the one `fetch(PUBLISHED_URL)` in `loadPublished()`. Do
-  not call `fetch` (or anything else DOM/network-dependent) above the `/* ---------- състояние` marker.
+- Do not add any network calls in `index.html` beyond `fetch(PUBLISHED_URL)` in `loadPublished()` (automatic,
+  on every load) and the `api.github.com` calls in `doGhPublish()` (user-initiated, only on clicking
+  **Публикувай в GitHub**). Do not call `fetch` (or anything else DOM/network-dependent) above the
+  `/* ---------- състояние` marker.
 - Do not make `sw.js` intercept or cache `custom-content.json`, or add any other caching to it beyond the
   `SHELL` files — see the `sw.js` ground rule above.
+- Do not render a formula/note/element/colour from `custom` or `published` into the page without
+  `escHtml()`/`safeColor()` — see the ground rule above.
 - Do not put `<form>` tags around the controls; the app uses button handlers.
 - Do not make any equation depend on a non-deterministic source other than the seeded PRNG in `generateSet`.

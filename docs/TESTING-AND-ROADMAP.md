@@ -80,10 +80,24 @@ Content editor (see `docs/EDITOR.md`)
 - [ ] Изтегли (export), then Първоначални (reset) — confirm the editor goes back to only built-in content —
   then Качи файл (import) the exported file: your changes come back exactly (including deletions).
 - [ ] Recolour an element (or add a brand-new one): the atom-count table's chip updates to match.
-- [ ] Publish: edit something, Изтегли, save that file over `custom-content.json` at the repo root, serve
-  locally. Open the game in a *different* browser (or after clearing this one's site data) with no local
-  `custom` overrides: the published edit shows up on its own — confirms it's not just this browser's
+- [ ] Publish (manual): edit something, Изтегли, save that file over `custom-content.json` at the repo root,
+  serve locally. Open the game in a *different* browser (or after clearing this one's site data) with no
+  local `custom` overrides: the published edit shows up on its own — confirms it's not just this browser's
   `localStorage` talking.
+- [ ] Publish (button): with no token saved, only the token field + Запази токена show, no Публикувай button.
+  Save a token (a real fine-grained PAT, scoped to just this repo, Contents: Read and write): the button
+  appears, and the token survives closing and reopening the editor (persisted, not re-typed every time).
+  Change something, click Публикувай в GitHub, confirm the dialog: green "Публикувано ✓" status, and the
+  commit actually lands on GitHub (check the repo's commit history). Reload the game (fresh tab): the change
+  is there without touching `custom` locally — confirms the button reaches every computer, not just this one.
+- [ ] Publish (button, bad token): save an invalid/expired token and click Публикувай: red error naming the
+  problem ("токенът е невалиден или изтекъл"), not a silent failure or a raw stack trace. Смени токена
+  reopens the entry field; Изчисти токена removes it after a confirm.
+- [ ] Security: add an equation whose formula or note contains `<img src=x onerror=alert(1)>` (or similar).
+  It must render as literal text everywhere it shows — the equation row, the editor's equation list, the
+  science note after solving — never as a real `<img>` tag, and no alert/dialog ever fires. Same check for a
+  colour value containing a `"` (e.g. via a hand-edited `custom-content.json`, since the colour-picker UI
+  itself won't let you type one): must fall back to the default grey chip, not break the page.
 
 Appearance and access
 - [ ] Dark mode (system setting): text readable, cards visible, atom colours distinguishable.
@@ -131,8 +145,12 @@ Appearance and access
 - No game-progress persistence: reloading mid-game restarts the current game from scratch. Content edits
   (equations, scoring, colours) do persist across reloads via `localStorage` — that's the editor, a separate
   thing from game progress.
-- Publishing content for everyone is a manual step (Изтегли, then commit `custom-content.json` and push) —
-  there is no in-app "publish" button that does the git commit for you.
+- Publishing content for everyone always ends in a git commit to `main` — the **Публикувай в GitHub** button
+  makes that commit for you via the GitHub API (needs a saved token, see `docs/EDITOR.md`), or it's the same
+  manual Изтегли → replace `custom-content.json` → commit + push either way. There is no way to publish
+  without one or the other.
+- The GitHub PAT the publish button uses is stored in this browser's `localStorage` only — it has to be
+  re-entered on every other browser/computer, and nothing warns you if it's about to expire.
 - The game requires being loaded over http(s) — opening `index.html` via `file://` always shows `#offline`,
   since browsers block `fetch()` there. There is no offline-first fallback.
 - The content editor's note-template tokens (`docs/EDITOR.md`) are simpler than what a hand-written JS `note`

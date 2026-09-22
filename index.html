@@ -150,7 +150,7 @@ ul.wrong{padding-left:18px;margin:6px 0}
 .topbar2{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px}
 .field{margin-bottom:12px}
 .field label{display:block;font-weight:700;font-size:.9rem;margin-bottom:4px}
-.field input[type=text],.field input[type=number],.field textarea,.field select{width:100%;font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.field input[type=text],.field input[type=number],.field input[type=password],.field textarea,.field select{width:100%;font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 .field textarea{min-height:70px;resize:vertical}
 .field .hint{font-size:.8rem;color:var(--muted);margin-top:4px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -297,8 +297,8 @@ ul.wrong{padding-left:18px;margin:6px 0}
 
     <div class="card">
       <h2><span class="material-icons" aria-hidden="true">construction</span>Публикуване</h2>
-      <p class="muted" style="margin-top:0">Промените тук се пазят само в този браузър, докато не ги публикуваш. Изтегли файла и го качи в хранилището
-        на играта като <code>custom-content.json</code> — тогава ги вижда всеки, който отвори играта, на всеки компютър.
+      <p class="muted" style="margin-top:0">Промените тук се пазят само в този браузър, докато не ги публикуваш — с бутона отдолу (директно в GitHub),
+        или на ръка: изтегли файла и го качи в хранилището на играта като <code>custom-content.json</code>.
         „Качи файл“ зарежда JSON само в този браузър, за преглед преди публикуване. Подробности: <code>docs/EDITOR.md</code>.</p>
       <div class="actions">
         <button id="btnExport"><span class="material-icons" aria-hidden="true">download</span>Изтегли</button>
@@ -306,6 +306,8 @@ ul.wrong{padding-left:18px;margin:6px 0}
         <input type="file" id="btnImport" accept="application/json" class="hidden">
         <button id="btnResetCustom"><span class="material-icons" aria-hidden="true">restore</span>Първоначални</button>
       </div>
+      <hr class="divider">
+      <div id="ghPublishBox"></div>
     </div>
   </section>
 
@@ -471,7 +473,14 @@ function parse(f){
   }
   return grp();
 }
-function pretty(f){ return f.replace(/(\d+)/g,'<sub>$1</sub>'); }
+// Всеки текст, който в крайна сметка идва от редактора (формула, бележка, елемент), минава оттук преди
+// да влезе в innerHTML или в HTML атрибут — иначе уравнение с "<img onerror=...>" във формулата би изпълнило
+// произволен JS при показване.
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function pretty(f){ return escHtml(f).replace(/(\d+)/g,'<sub>$1</sub>'); }
+// Цвят от ACTIVE_COLORS (вграден или публикуван/локален override) отива направо в style="background:..." —
+// само #rrggbb минава, иначе резервен сив, за да не може подаден низ да излезе от атрибута.
+function safeColor(hex){ return /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : '#999999'; }
 function eqText(e){
   const side=(arr,off)=>arr.map((f,i)=>(e.sol[off+i]>1?e.sol[off+i]:'')+f.replace(/(\d+)/g,d=>[...d].map(c=>'₀₁₂₃₄₅₆₇₈₉'[c]).join(''))).join(' + ');
   return side(e.left,0)+' → '+side(e.right,e.left.length);
@@ -555,9 +564,9 @@ function render(){
     else if(i>0) html+='<div class="op" aria-hidden="true">+</div>';
     html+=`<div class="term">
       <div class="ctrl">
-        <button data-i="${i}" data-d="1" aria-label="Увеличи коефициента на ${f}" ${solved?'disabled':''}>+</button>
+        <button data-i="${i}" data-d="1" aria-label="Увеличи коефициента на ${escHtml(f)}" ${solved?'disabled':''}>+</button>
         <div class="coef" aria-live="polite">${coefs[i]}</div>
-        <button data-i="${i}" data-d="-1" aria-label="Намали коефициента на ${f}" ${solved?'disabled':''}>−</button>
+        <button data-i="${i}" data-d="-1" aria-label="Намали коефициента на ${escHtml(f)}" ${solved?'disabled':''}>−</button>
       </div>
       <div class="formula">${pretty(f)}</div>
     </div>`;
@@ -598,7 +607,7 @@ function renderCounter(){
     const icon=pending?'remove':ok?'check':'close';
     const label=pending?'все още не е зададено':ok?'равно':'различно';
     h+=`<tr class="${row}">
-      <td class="el"><span class="chip" style="background:${ACTIVE_COLORS[el]||'#999'}"></span>${el}</td>
+      <td class="el"><span class="chip" style="background:${safeColor(ACTIVE_COLORS[el])}"></span>${escHtml(el)}</td>
       <td class="num"><span class="numval">${l}</span><div class="barwrap"><div class="bar-fill" style="width:${l/top*100}%"></div></div></td>
       <td class="st"><span class="badge ${badge}" aria-label="${label}"><span class="material-icons" aria-hidden="true">${icon}</span></span></td>
       <td class="num"><span class="numval">${r}</span><div class="barwrap"><div class="bar-fill" style="width:${r/top*100}%"></div></div></td>
@@ -636,7 +645,7 @@ function check(){
   const pts=Math.max(0,s.base-hints*s.hint-mistakes*s.mistake);
   score+=pts;
   fb.innerHTML=`<div class="msg ok"><span class="material-icons" aria-hidden="true">check_circle</span><span>Вярно! +${pts} точки за това уравнение.</span></div>
-    <div class="science"><span class="material-icons" aria-hidden="true">science</span><span><b>Какво се случва:</b> ${e.note}</span></div>`;
+    <div class="science"><span class="material-icons" aria-hidden="true">science</span><span><b>Какво се случва:</b> ${escHtml(e.note)}</span></div>`;
   if(mistakes>0||hints>0) wrong.push(eqText(e));
   $('gameActions').classList.add('hidden');
   $('nextActions').classList.remove('hidden');
@@ -764,11 +773,10 @@ function closeEqForm(){ eqFormState=null; $('eqFormCard').classList.add('hidden'
 
 function renderEqForm(){
   const s=eqFormState;
-  const esc=t=>t.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
   const termRows=(list,side)=>list.map((t,i)=>`
     <div class="termRow">
       <input type="number" min="1" max="${ACTIVE_SCORING.maxCoef}" value="${t.coef}" data-side="${side}" data-i="${i}" data-f="coef" aria-label="Коефициент">
-      <input type="text" value="${esc(t.formula)}" placeholder="напр. Na2O или {M}2O" data-side="${side}" data-i="${i}" data-f="formula" aria-label="Формула">
+      <input type="text" value="${escHtml(t.formula)}" placeholder="напр. Na2O или {M}2O" data-side="${side}" data-i="${i}" data-f="formula" aria-label="Формула">
       <button type="button" class="iconbtn danger" data-side="${side}" data-i="${i}" data-act="removeTerm" aria-label="Премахни вещество"><span class="material-icons" aria-hidden="true">delete</span></button>
     </div>`).join('');
   const usesM=s.left.concat(s.right).some(t=>/\{M\}/.test(t.formula));
@@ -782,7 +790,7 @@ function renderEqForm(){
     ${usesM?`<div class="field"><label>Кои алкални метали са позволени за {M}?</label><div class="chipset">${chipset(ALK,s.varsM,'M')}</div></div>`:''}
     ${usesX?`<div class="field"><label>Кои халогени са позволени за {X}?</label><div class="chipset">${chipset(HAL,s.varsX,'X')}</div></div>`:''}
     <div class="field"><label>Бележка след верен отговор</label>
-      <textarea id="fNote">${esc(s.note)}</textarea>
+      <textarea id="fNote">${escHtml(s.note)}</textarea>
       <div class="hint">${(usesM||usesX)?('Може да ползваш '+(usesM?'{M} (символ), {Mname} (име), {Madj} (прилагателно) ':'')+(usesX?'{X} (символ), {Xname} (име), {Xhalide} (халогенид)':'')+' – ще се заменят с истинския избран елемент.'):'Формулите тук нямат {M}/{X}, така че бележката е обикновен текст.'}</div>
     </div>
     <div id="fValidation"></div>
@@ -829,7 +837,7 @@ function validateForm(){
   const box=$('fValidation');
   if(problems.length){
     box.className='validation bad';
-    box.innerHTML='<b>Все още не може да се запази:</b><ul>'+problems.map(p=>`<li>${p}</li>`).join('')+'</ul>';
+    box.innerHTML='<b>Все още не може да се запази:</b><ul>'+problems.map(p=>`<li>${escHtml(p)}</li>`).join('')+'</ul>';
     $('fSave').disabled=true;
   } else {
     box.className='validation ok';
@@ -864,7 +872,7 @@ function renderEqList(){
       preview=t.left.map(sub).join(' + ')+' → '+t.right.map(sub).join(' + ');
     }catch(e){ preview=t.id; }
     return `<div class="eqlistrow">
-      <span class="eqtext">${preview}</span>
+      <span class="eqtext">${escHtml(preview)}</span>
       <button type="button" class="iconbtn" data-act="edit" data-id="${t.id}" ${complex?'disabled title="Сложен шаблон – редактирай в кода"':''} aria-label="Редактирай"><span class="material-icons" aria-hidden="true">edit</span></button>
       <button type="button" class="iconbtn danger" data-act="del" data-id="${t.id}" aria-label="Изтрий"><span class="material-icons" aria-hidden="true">delete</span></button>
     </div>`;
@@ -899,8 +907,8 @@ function renderColorsForm(){
   const symbols=Object.keys(ACTIVE_COLORS).sort();
   let html=symbols.map(el=>`
     <div class="colorrow">
-      <input type="color" data-el="${el}" value="${/^#/.test(ACTIVE_COLORS[el])?ACTIVE_COLORS[el]:'#999999'}">
-      <b>${el}</b>
+      <input type="color" data-el="${escHtml(el)}" value="${safeColor(ACTIVE_COLORS[el])}">
+      <b>${escHtml(el)}</b>
     </div>`).join('');
   html+=`<div class="colorrow">
       <input type="text" id="newColEl" placeholder="нов символ, напр. Zn" style="width:8em">
@@ -942,10 +950,93 @@ function resetCustom(){
   custom=emptyCustom(); saveCustom(); rebuildActive(); renderEditor(); renderScoringText();
 }
 
+/* ---------- публикуване в GitHub ---------- */
+// Токенът се пази само в localStorage на този браузър и се праща единствено към api.github.com — никога не
+// се вгражда в страницата, не се публикува в custom-content.json, не се показва другаде.
+const GH_TOKEN_KEY='balans_gh_token_v1';
+const GH_OWNER='ivanlyubenov12', GH_REPO='praktikum-game', GH_BRANCH='main';
+function loadGhToken(){ try{ return localStorage.getItem(GH_TOKEN_KEY)||''; }catch(e){ return ''; } }
+function saveGhToken(t){ try{ localStorage.setItem(GH_TOKEN_KEY,t); }catch(e){} }
+function clearGhToken(){ try{ localStorage.removeItem(GH_TOKEN_KEY); }catch(e){} }
+function utf8ToBase64(str){ return btoa(unescape(encodeURIComponent(str))); }   // JSON.stringify(custom) може да съдържа кирилица
+
+function ghErrorMessage(err){
+  const s=err&&err.status;
+  if(s===401) return 'Токенът е невалиден или изтекъл. Изчисти го и въведи нов.';
+  if(s===403) return 'Токенът няма достатъчно права. Провери дали е ограничен само до този репозиторий, с права „Contents: Read and write“.';
+  if(s===404) return `Хранилището или токенът не бяха намерени. Провери дали токенът има достъп до ${GH_OWNER}/${GH_REPO}.`;
+  if(s===409) return 'Някой друг е публикувал междувременно. Презареди страницата и опитай пак.';
+  if(s===422) return 'GitHub отказа заявката (невалидни данни).';
+  return 'Нещо се обърка при публикуването'+(s?` (код ${s})`:'')+'. Провери връзката и опитай пак.';
+}
+
+async function doGhPublish(){
+  const token=loadGhToken();
+  if(!token) return;
+  if(!confirm('Публикуваш направо в GitHub хранилището — веднага става видимо за всеки, който отвори играта. Продължаваш ли?')) return;
+  const status=$('ghPublishStatus'), btn=$('btnGhPublish');
+  status.className='validation'; status.textContent='Публикувам…';
+  btn.disabled=true;
+  try{
+    const api=`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${PUBLISHED_URL}`;
+    const headers={'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json'};
+    const getRes=await fetch(api+'?ref='+GH_BRANCH,{headers});
+    let sha;
+    if(getRes.status===200){ sha=(await getRes.json()).sha; }
+    else if(getRes.status!==404){ throw {status:getRes.status}; }
+    const body={message:'Публикувай съдържание от редактора',content:utf8ToBase64(JSON.stringify(custom,null,2)),branch:GH_BRANCH};
+    if(sha) body.sha=sha;
+    const putRes=await fetch(api,{method:'PUT',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!putRes.ok) throw {status:putRes.status};
+    status.className='validation ok';
+    status.textContent='Публикувано ✓ Всеки, който презареди играта, ще вижда тези промени.';
+  }catch(err){
+    status.className='validation bad';
+    status.textContent=ghErrorMessage(err);
+  }finally{
+    btn.disabled=false;
+  }
+}
+
+function renderGhPublish(){
+  const token=loadGhToken(), box=$('ghPublishBox');
+  if(token){
+    const tail=token.length>4?token.slice(-4):'';
+    box.innerHTML=`
+      <p class="muted" style="margin-top:0">Токен: запазен в този браузър${tail?` (···${escHtml(tail)})`:''}.</p>
+      <div class="actions">
+        <button class="primary" id="btnGhPublish"><span class="material-icons" aria-hidden="true">cloud_upload</span>Публикувай в GitHub</button>
+        <button id="btnGhChangeToken"><span class="material-icons" aria-hidden="true">key</span>Смени токена</button>
+        <button id="btnGhClearToken"><span class="material-icons" aria-hidden="true">delete</span>Изчисти токена</button>
+      </div>
+      <div id="ghPublishStatus"></div>`;
+    $('btnGhPublish').onclick=doGhPublish;
+    $('btnGhChangeToken').onclick=()=>{ clearGhToken(); renderGhPublish(); };
+    $('btnGhClearToken').onclick=()=>{ if(confirm('Да изтрия ли запазения токен от този браузър?')){ clearGhToken(); renderGhPublish(); } };
+  } else {
+    box.innerHTML=`
+      <div class="field" style="margin-top:0">
+        <label>GitHub токен (fine-grained, само за този репозиторий, „Contents: Read and write“)</label>
+        <input type="password" id="ghTokenInput" placeholder="github_pat_…" autocomplete="off">
+        <div class="hint">Пази се само в този браузър — праща се единствено към api.github.com. Как да го вземеш: <code>docs/EDITOR.md</code>.</div>
+      </div>
+      <div class="actions">
+        <button class="primary" id="btnGhSaveToken"><span class="material-icons" aria-hidden="true">key</span>Запази токена</button>
+      </div>
+      <div id="ghPublishStatus"></div>`;
+    $('btnGhSaveToken').onclick=()=>{
+      const t=$('ghTokenInput').value.trim();
+      if(!t) return;
+      saveGhToken(t); renderGhPublish();
+    };
+  }
+}
+
 function renderEditor(){
   renderScoringForm();
   renderColorsForm();
   renderEqList();
+  renderGhPublish();
   closeEqForm();
 }
 

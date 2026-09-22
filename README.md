@@ -11,7 +11,8 @@ halogen (F, Cl, Br, I) are chosen at random. 12 equations per game, drawn at ran
 **All of it is editable in the app itself.** Open `index.html?editor=1` (there's no link to it from the start
 screen, so players don't stumble into it) to add, edit or delete equations (built-in ones included), change
 scoring, or recolour elements — no code editing needed. Publishing those edits for every computer instead of
-just your own browser does need one git commit — see `docs/EDITOR.md`.
+just your own browser always ends in one git commit to `main`, made either by the editor's **Публикувай в
+GitHub** button (needs a GitHub token pasted in once) or by hand — see `docs/EDITOR.md`.
 
 Built as a school project (NOIT 2025/2026, task 2: a computer game for revision of a chemistry topic).
 

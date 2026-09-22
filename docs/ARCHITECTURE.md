@@ -131,6 +131,12 @@ colour chip, a proportional bar per side and a badge). A row is grey/"—" (`row
 to 0 for that element (nothing entered yet on either side), green/✓ once both sides match, red/✗ otherwise.
 It re-creates DOM on every click; that is fine at this size.
 
+Every formula, note, element symbol or colour that could originate from `custom`/`published` — i.e. from
+`ACTIVE_TEMPLATES`/`ACTIVE_COLORS` rather than a hardcoded string — goes through `escHtml()` (text and HTML
+attributes) or `safeColor()` (colour values inside `style="background:...":`) before it's written into
+`innerHTML`. `published` is network input; treat it like any other untrusted external data, not like the
+editor's own already-validated form fields. See **Security** in `docs/EDITOR.md`.
+
 `render()` also calls `updateEqFade()`, which toggles `scroll-left`/`scroll-right` classes on `#eqScroll`
 (the wrapper around `#eq`) based on `#eq`'s `scrollLeft`/`scrollWidth`/`clientWidth`. Those classes drive a
 CSS gradient that fades the overflowing edge(s) into the card background, so a scrollable equation row is
