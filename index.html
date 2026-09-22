@@ -983,6 +983,10 @@ async function init(){
   }catch(e){ show('offline'); }
 }
 init();
+
+// Прогресивно подобрение: кешира index.html + иконния шрифт, за да стигне играта до собствения си
+// #offline екран дори при студено презареждане без връзка (виж sw.js). Провал тук не чупи нищо.
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 </script>
 </body>
 </html>

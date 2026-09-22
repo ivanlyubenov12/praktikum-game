@@ -32,6 +32,14 @@ Load
   only the built-in defaults — a missing file is "nothing published yet", not an error.
 - [ ] Rename `vendor/MaterialIcons.woff2` temporarily: buttons and headings still work but show the raw icon
   name (e.g. "play_arrow Започни") instead of a glyph — ugly, not broken. Rename it back.
+- [ ] Visit the game once online (so `sw.js` installs — check DevTools → Application → Service Workers shows
+  it active), then go fully offline (DevTools → Network → Offline, or real airplane mode) and reload: still
+  our `#offline` screen with a readable icon, **not** the browser's own "no internet" page. This is the
+  scenario the service worker exists for — a totally cold load with zero connectivity, not just a failed
+  fetch mid-session.
+- [ ] With the service worker active and online, edit `custom-content.json` on the server (or via the publish
+  workflow) and reload: the change shows up immediately — confirms `sw.js` never serves a stale cached copy
+  of it.
 
 Gameplay
 - [ ] Open `index.html?seed=42`. First equation is `4Na + O₂ → 2Na₂O`, all three coefficients start at 0 and

@@ -62,6 +62,10 @@ you publish:
 This is the one deliberate exception to "no code editing needed" — publishing for everyone requires a git
 commit, not just clicking around the editor. A single browser's own local edits never need this step.
 
+`custom-content.json` is deliberately excluded from `sw.js`'s cache (see `docs/ARCHITECTURE.md`) — every load
+fetches it live from the network, even on a device that's visited before, so a freshly published edit always
+shows up on the very next load. Never add it to `sw.js`'s `SHELL` array.
+
 ## The note-template mini-language
 
 Built-in templates use a JS function for `note` (`v => `...``), which can do anything — that's how e.g. the

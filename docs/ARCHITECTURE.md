@@ -1,10 +1,10 @@
 # Architecture
 
 All UI code is one file, `index.html`. No modules, no bundler. Everything is global inside a single `<script>`
-block. There is a second, data-only file at the repo root, `custom-content.json` — see **Custom content
-layer** below. The game must be served over http(s) (GitHub Pages) — it fetches that file at load and shows
-`#offline` if it can't, so it no longer works opened via `file://`. This was a deliberate tradeoff; see
-`docs/EDITOR.md`.
+block. Two small files sit next to it at the repo root: `custom-content.json`, a data-only file — see
+**Custom content layer** below — and `sw.js`, a service worker — see **Offline handling** below. The game
+must be served over http(s) (GitHub Pages) — it fetches `custom-content.json` at load and shows `#offline` if
+it can't, so it no longer works opened via `file://`. This was a deliberate tradeoff; see `docs/EDITOR.md`.
 
 ## Screens
 
@@ -14,6 +14,20 @@ layer** below. The game must be served over http(s) (GitHub Pages) — it fetche
 link to the editor from `#start`, see `docs/EDITOR.md`. If `loadPublished()` throws (no connectivity, or a
 `fetch` blocked on `file://`), `init()` shows `#offline` instead, with a **Опитай пак** button that just
 `location.reload()`s.
+
+## Offline handling
+
+`#offline` only shows once `index.html`'s own JS is running — it can't do anything about the browser's *own*
+error page for a navigation that fails before any JS loads (e.g. reloading with zero connectivity). `sw.js`
+fixes that: a service worker, registered at the very end of `index.html`'s script
+(`navigator.serviceWorker.register('sw.js')`, swallowing any failure — pure progressive enhancement), that
+precaches `index.html` and `vendor/MaterialIcons.woff2` (its `SHELL` array) on install. Its `fetch` handler is
+network-first for exactly those two: try the network, cache a fresh copy on success, fall back to the cached
+copy on failure. Every other request — most importantly `custom-content.json` — passes straight through
+untouched, `respondWith` never called, so published content always hits the network live and is never served
+stale from the service-worker cache. The net effect: even a fully cold offline reload still loads the cached
+`index.html` (with a readable icon font), whose own JS then fails to fetch `custom-content.json` and shows
+`#offline` normally — the *same* code path as a mid-session connectivity drop, not a separate one.
 
 ## Custom content layer
 

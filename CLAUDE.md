@@ -5,13 +5,22 @@ halogens. Read `README.md` first, then the relevant file in `docs/`.
 
 ## Ground rules
 
-- **Single file app.** All UI code lives in `index.html`. No bundler, no npm, no framework. Keep it that way
-  unless the user asks otherwise.
+- **Single file app for UI code.** All UI code lives in `index.html`. No bundler, no npm, no framework. Keep
+  it that way unless the user asks otherwise. Two small supporting files sit next to it: `custom-content.json`
+  (data, see below) and `sw.js` (a service worker, see below) — both are plain static files, not a build step.
 - **The game needs to be hosted and online**, not opened via `file://`. It's served from GitHub Pages and
   fetches `custom-content.json` (repo root, next to `index.html`) at load — that's how content edits reach
   every computer instead of staying stuck in one browser's `localStorage`. If that fetch fails (no
-  connectivity, or a `file://` page, which browsers block `fetch()` on) the game shows `#offline` instead of
-  playing. This was a deliberate tradeoff the user chose over a purely offline app — see `docs/EDITOR.md`.
+  connectivity) the game shows `#offline` instead of playing. This was a deliberate tradeoff the user chose
+  over a purely offline app — see `docs/EDITOR.md`.
+- **`sw.js` is a service worker that precaches `index.html` and `vendor/MaterialIcons.woff2` only**, so that
+  even a fully cold page load with no connectivity at all still reaches `index.html`'s own JS (and thus
+  `#offline`) instead of the browser's native error page. Registered near the bottom of `index.html`
+  (`navigator.serviceWorker.register('sw.js')`), swallowing any failure — it's a progressive enhancement, the
+  app must work identically if it's unsupported or fails to register. **`sw.js` must never intercept or cache
+  `custom-content.json`** (or anything else) — that fetch has to hit the network live every time, or published
+  content stops propagating. If `sw.js` ever needs new shell assets, add them to its `SHELL` array, not by
+  broadening what it intercepts.
 - **UI language is Bulgarian.** All user-visible strings (including equation notes) are Bulgarian. Code,
   comments and docs are English (except `SEMINAR.md`, which is Bulgarian on purpose).
 - **Icons are the Material Icons webfont**, self-hosted at `vendor/MaterialIcons.woff2` (no CDN, no fallback —
@@ -52,7 +61,8 @@ halogens. Read `README.md` first, then the relevant file in `docs/`.
    for the same reason — it throws (caught, falls back to empty) inside `tools/validate.js`'s Node VM, which
    has neither `localStorage` nor `fetch`. `published` starts as `emptyCustom()` above the marker (so
    `tools/validate.js` still validates the exact hardcoded defaults, unaffected by the network layer) and is
-   only ever replaced by `loadPublished()`, below the marker.
+   only ever replaced by `loadPublished()`, below the marker. The service worker registration is the very
+   last line of the script, after `init()`.
 
 ## Common tasks
 
@@ -71,7 +81,9 @@ halogens. Read `README.md` first, then the relevant file in `docs/`.
 
 ## Do not
 
-- Do not add any network calls beyond the one `fetch(PUBLISHED_URL)` in `loadPublished()`. Do not call `fetch`
-  (or anything else DOM/network-dependent) above the `/* ---------- състояние` marker.
+- Do not add any network calls in `index.html` beyond the one `fetch(PUBLISHED_URL)` in `loadPublished()`. Do
+  not call `fetch` (or anything else DOM/network-dependent) above the `/* ---------- състояние` marker.
+- Do not make `sw.js` intercept or cache `custom-content.json`, or add any other caching to it beyond the
+  `SHELL` files — see the `sw.js` ground rule above.
 - Do not put `<form>` tags around the controls; the app uses button handlers.
 - Do not make any equation depend on a non-deterministic source other than the seeded PRNG in `generateSet`.

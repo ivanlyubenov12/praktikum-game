@@ -23,6 +23,10 @@ It's hosted on GitHub Pages; opening `index.html` by double-click (`file://`) sh
 fetches `custom-content.json` at load (see below). For local development, run any static file server in the
 repo folder (e.g. `npx http-server`) and open it through that.
 
+A service worker (`sw.js`) precaches `index.html` and the icon font so that screen shows even on a fully cold
+reload with zero connectivity, instead of the browser's own network-error page — but it deliberately never
+caches `custom-content.json`, so published edits always load live. See `docs/ARCHITECTURE.md`.
+
 The Material Icons webfont is bundled in `vendor/MaterialIcons.woff2`, for offline use, no CDN fallback. Icons
 are implemented as ligatures (the DOM text is literally `play_arrow`, `check`, …), so if that file is ever
 missing, those labels would show as raw English icon names instead of a glyph — keep it next to `index.html`.
@@ -58,6 +62,7 @@ Every game draws 12 equations at random from the whole pool above — there's no
 |---|---|
 | `index.html` | The whole app: HTML, CSS, JS (templates, generator, game logic). Edit this. |
 | `custom-content.json` | Published content overrides, fetched by the game at load. Edited via the in-app editor's Изтегли/publish workflow, not by hand — see `docs/EDITOR.md`. |
+| `sw.js` | Service worker: precaches `index.html` + the icon font for the offline screen, never caches `custom-content.json`. See `docs/ARCHITECTURE.md`. |
 | `tools/validate.js` | `node tools/validate.js`: checks every equation the generator can produce. |
 | `vendor/MaterialIcons.woff2` | Material Icons webfont, ligature-based (Apache 2.0). Do not edit. |
 | `vendor/MATERIAL-ICONS-LICENSE.txt` | Material Icons license. |
