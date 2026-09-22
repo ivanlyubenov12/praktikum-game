@@ -10,19 +10,22 @@ halogen (F, Cl, Br, I) are chosen at random. 12 equations per game, drawn at ran
 
 **All of it is editable in the app itself.** Open `index.html?editor=1` (there's no link to it from the start
 screen, so players don't stumble into it) to add, edit or delete equations (built-in ones included), change
-scoring, or recolour elements — no code editing needed. See `docs/EDITOR.md`.
+scoring, or recolour elements — no code editing needed. Publishing those edits for every computer instead of
+just your own browser does need one git commit — see `docs/EDITOR.md`.
 
 Built as a school project (NOIT 2025/2026, task 2: a computer game for revision of a chemistry topic).
 
 ## Run it
 
-No build step, no install.
+No build step, no install — but the game does need to be **served over http(s), not opened as a local file**.
+It's hosted on GitHub Pages; opening `index.html` by double-click (`file://`) shows the "Няма връзка с
+интернет" screen instead of the game, because browsers block `fetch()` on `file://` pages, and the game
+fetches `custom-content.json` at load (see below). For local development, run any static file server in the
+repo folder (e.g. `npx http-server`) and open it through that.
 
-1. Open `index.html` in a browser (double-click is fine).
-2. The Material Icons webfont is bundled in `vendor/MaterialIcons.woff2`, for offline use, no CDN fallback.
-   Icons are implemented as ligatures (the DOM text is literally `play_arrow`, `check`, …), so if that file is
-   ever missing, those labels would show as raw English icon names instead of a glyph — keep it next to
-   `index.html`.
+The Material Icons webfont is bundled in `vendor/MaterialIcons.woff2`, for offline use, no CDN fallback. Icons
+are implemented as ligatures (the DOM text is literally `play_arrow`, `check`, …), so if that file is ever
+missing, those labels would show as raw English icon names instead of a glyph — keep it next to `index.html`.
 
 **Repeatable game (for demos and tests):** add `?seed=123` to the address, e.g. `index.html?seed=123`.
 The same seed always gives the same 12 equations. Pressing "play again" uses seed+1. Without `?seed=`, each game
@@ -54,6 +57,7 @@ Every game draws 12 equations at random from the whole pool above — there's no
 | Path | What it is |
 |---|---|
 | `index.html` | The whole app: HTML, CSS, JS (templates, generator, game logic). Edit this. |
+| `custom-content.json` | Published content overrides, fetched by the game at load. Edited via the in-app editor's Изтегли/publish workflow, not by hand — see `docs/EDITOR.md`. |
 | `tools/validate.js` | `node tools/validate.js`: checks every equation the generator can produce. |
 | `vendor/MaterialIcons.woff2` | Material Icons webfont, ligature-based (Apache 2.0). Do not edit. |
 | `vendor/MATERIAL-ICONS-LICENSE.txt` | Material Icons license. |

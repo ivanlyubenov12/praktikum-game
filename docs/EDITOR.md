@@ -8,37 +8,59 @@ the normal start screen.
 
 ## Why this design
 
-The app is a single offline HTML file with no server (`CLAUDE.md`). That rules out a database or a backend for
-storing edits, so the editor works as a **layer of overrides on top of the code's built-in content**, persisted
-in the browser via `localStorage` and portable via export/import of a JSON file.
+The app has no database or backend, so edits are layered on top of the code's built-in content rather than
+written into it. There are **three layers**, each optional and each overriding the one before it:
+
+1. **`TEMPLATES`/`COLORS`/`SCORING_DEFAULT`** — the hardcoded defaults in `index.html`, unchanged and still
+   fully checked by `tools/validate.js`. Nothing the editor does can corrupt this — it's read, never written.
+2. **`published`** — fetched from `custom-content.json` at the repo root, at page load. This is how edits reach
+   *every* computer that opens the game, not just the browser they were made in — see **Publishing** below.
+3. **`custom`** — this browser's own `localStorage`, layered on top of `published`. Lets you draft or
+   personally tweak content without publishing it for everyone yet.
+
+`rebuildActive()` applies layer 2 on top of layer 1, then layer 3 on top of that result (via `mergeLayer()`,
+called twice), into the globals the rest of the game actually reads: `ACTIVE_TEMPLATES`, `ACTIVE_COLORS`,
+`ACTIVE_SCORING`. Every runtime function (`generateSet`, `loadEq`, `renderCounter`, `check`, `hint`, ...) reads
+the `ACTIVE_*` versions, never the raw defaults directly — see `docs/ARCHITECTURE.md`. There are no levels:
+`generateSet` samples `GAME_LENGTH` equations at random from the whole `ACTIVE_TEMPLATES` pool, so the editor
+has nothing level-related to expose.
 
 ## Data model
 
-Built-in content stays exactly as it always was: `TEMPLATES`, `COLORS` in `index.html`, unchanged and still
-fully checked by `tools/validate.js`. Nothing the editor does can corrupt this — it's read, never written.
-
-A second object, `custom`, holds everything the player has changed:
+`published` and `custom` are both the same shape (`normalizeCustom()` enforces it everywhere one is read —
+from `localStorage`, an uploaded file, or the network):
 
 ```js
 {
   templates: [ {id, left, right, sol, vars, noteTpl}, ... ],  // additions AND overrides (matched by id)
   deletedIds: ['some-builtin-id', ...],                       // built-in templates to hide
-  colors: {El: '#hex', ...},  // merged on top of COLORS
-  scoring: {base, mistake, hint, maxCoef}  // merged on top of SCORING_DEFAULT
+  colors: {El: '#hex', ...},  // merged on top of the previous layer's colours
+  scoring: {base, mistake, hint, maxCoef}  // merged on top of the previous layer's scoring
 }
 ```
 
 `custom` is loaded from `localStorage` (key `balans_custom_v1`) on page load and saved back after every edit.
-`rebuildActive()` merges it with the built-in defaults into the globals the rest of the game actually reads:
-`ACTIVE_TEMPLATES`, `ACTIVE_COLORS`, `ACTIVE_SCORING`. Every runtime function (`generateSet`, `loadEq`,
-`renderCounter`, `check`, `hint`, ...) reads the `ACTIVE_*` versions, never the raw defaults directly — see
-`docs/ARCHITECTURE.md`. There are no levels: `generateSet` samples `GAME_LENGTH` equations at random from the
-whole `ACTIVE_TEMPLATES` pool, so the editor has nothing level-related to expose.
+`published` starts as `emptyCustom()` and is replaced by `loadPublished()` (an async `fetch`, below the
+`/* ---------- състояние` marker) once `custom-content.json` has loaded — see `docs/ARCHITECTURE.md`.
 
-Editing a template whose `id` matches a built-in one **overrides** it (the built-in stays in the code, just
-hidden behind the override); a new `id` (auto-generated as `custom-<timestamp36>`) **adds** one. Deleting a
-built-in template records its id in `deletedIds` rather than trying to remove code; deleting a custom one just
-drops it from `templates`.
+Editing a template whose `id` matches one from the previous layer **overrides** it (the original stays where it
+was, just hidden behind the override); a new `id` (auto-generated as `custom-<timestamp36>`) **adds** one.
+Deleting a template from a previous layer records its id in `deletedIds` rather than trying to remove it;
+deleting one added in the current layer just drops it from `templates`.
+
+## Publishing
+
+Editing in the browser only ever touches the local `custom` layer (`localStorage`) — nobody else sees it until
+you publish:
+
+1. Make your changes in the editor as usual.
+2. Click **Изтегли** to download the JSON.
+3. Replace `custom-content.json` at the repo root with that file, and commit + push it.
+4. GitHub Pages redeploys automatically; anyone who (re)loads the game now gets your content as the
+   `published` layer, merged under their own local `custom` overrides if they have any.
+
+This is the one deliberate exception to "no code editing needed" — publishing for everyone requires a git
+commit, not just clicking around the editor. A single browser's own local edits never need this step.
 
 ## The note-template mini-language
 
@@ -65,9 +87,10 @@ saving always replaces it with the token-template text.
   with its Edit button disabled and a tooltip explaining why. It can still be deleted.
 - **Arbitrary chemistry-note logic.** See the token language above — good enough for "X reacts with Y to give Z",
   not for prose that branches on which specific element was picked beyond simple substitution.
-- **Multi-device sync.** Edits live in one browser's `localStorage`. Use **Изтегли** (export) to get a JSON
-  file and **Качи файл** (import) to load it into another browser/computer — import replaces the current
-  customisations wholesale, it does not merge.
+- **Live multi-device sync.** Publishing (see above) is a manual git commit, not automatic — a change isn't
+  visible elsewhere until it's pushed and the page is reloaded. **Качи файл** (import) loads a JSON into the
+  current browser's local `custom` layer only, and replaces its customisations wholesale — it does not merge,
+  and it does not publish anything.
 
 ## Validation
 

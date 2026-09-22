@@ -21,7 +21,15 @@ validated in the browser instead (same balance/smallest-coefficient logic); see 
 ## Manual checklist (needs a real browser)
 
 Load
-- [ ] Open `index.html` by double-click (`file://`). Start screen appears, no red errors in the console.
+- [ ] Open `index.html` by double-click (`file://`). Browsers block `fetch()` on `file://` pages, so this
+  should show `#offline` ("Няма връзка с интернет"), not the start screen — that's expected, not a bug. Press
+  *Опитай пак*: reloads, same result.
+- [ ] Serve the repo folder locally (e.g. `npx http-server`) and open `index.html` through that URL. Start
+  screen appears, no red errors in the console.
+- [ ] With the local server running, block or rename `custom-content.json` temporarily: still `#offline`
+  (a failed fetch, not a 404, since the file exists but can't be read) — rename/restore it back.
+- [ ] Delete/rename `custom-content.json` entirely (a genuine 404): start screen appears normally, playing
+  only the built-in defaults — a missing file is "nothing published yet", not an error.
 - [ ] Rename `vendor/MaterialIcons.woff2` temporarily: buttons and headings still work but show the raw icon
   name (e.g. "play_arrow Започни") instead of a glyph — ugly, not broken. Rename it back.
 
@@ -64,6 +72,10 @@ Content editor (see `docs/EDITOR.md`)
 - [ ] Изтегли (export), then Първоначални (reset) — confirm the editor goes back to only built-in content —
   then Качи файл (import) the exported file: your changes come back exactly (including deletions).
 - [ ] Recolour an element (or add a brand-new one): the atom-count table's chip updates to match.
+- [ ] Publish: edit something, Изтегли, save that file over `custom-content.json` at the repo root, serve
+  locally. Open the game in a *different* browser (or after clearing this one's site data) with no local
+  `custom` overrides: the published edit shows up on its own — confirms it's not just this browser's
+  `localStorage` talking.
 
 Appearance and access
 - [ ] Dark mode (system setting): text readable, cards visible, atom colours distinguishable.
@@ -111,6 +123,10 @@ Appearance and access
 - No game-progress persistence: reloading mid-game restarts the current game from scratch. Content edits
   (equations, scoring, colours) do persist across reloads via `localStorage` — that's the editor, a separate
   thing from game progress.
+- Publishing content for everyone is a manual step (Изтегли, then commit `custom-content.json` and push) —
+  there is no in-app "publish" button that does the git commit for you.
+- The game requires being loaded over http(s) — opening `index.html` via `file://` always shows `#offline`,
+  since browsers block `fetch()` there. There is no offline-first fallback.
 - The content editor's note-template tokens (`docs/EDITOR.md`) are simpler than what a hand-written JS `note`
   function can do; equations with more than two variables or an `ok` filter can't be added or edited through
   the UI at all, only deleted.

@@ -1,21 +1,29 @@
 # Architecture
 
-One file, `index.html`. No modules. Everything is global inside a single `<script>` block.
+All UI code is one file, `index.html`. No modules, no bundler. Everything is global inside a single `<script>`
+block. There is a second, data-only file at the repo root, `custom-content.json` — see **Custom content
+layer** below. The game must be served over http(s) (GitHub Pages) — it fetches that file at load and shows
+`#offline` if it can't, so it no longer works opened via `file://`. This was a deliberate tradeoff; see
+`docs/EDITOR.md`.
 
 ## Screens
 
-`show(id)` toggles the `hidden` class on `#start`, `#game`, `#end`, `#editor`. `#start` is visible by default;
-the only way to `show('editor')` on load is the `?editor=1` URL param (checked at the bottom of the script) —
-there is no link to it from `#start`, see `docs/EDITOR.md`.
+`show(id)` toggles the `hidden` class on `#loading`, `#offline`, `#start`, `#game`, `#end`, `#editor`.
+`#loading` is visible by default (a minimal "Зарежда…" card); `init()` (bottom of the script) awaits
+`loadPublished()` and then shows `#start` or, with the `?editor=1` URL param, `#editor` directly — there is no
+link to the editor from `#start`, see `docs/EDITOR.md`. If `loadPublished()` throws (no connectivity, or a
+`fetch` blocked on `file://`), `init()` shows `#offline` instead, with a **Опитай пак** button that just
+`location.reload()`s.
 
 ## Custom content layer
 
-`TEMPLATES`/`COLORS` (below) are the built-in defaults and stay exactly as authored — `tools/validate.js`
-checks them and only them. What the game actually plays is `ACTIVE_TEMPLATES` / `ACTIVE_COLORS` /
-`ACTIVE_SCORING`, computed by `rebuildActive()` as the defaults with the player's `custom` overrides (from
-`localStorage`, editable via the **Редактор на съдържание** screen) layered on top. Every runtime function
-reads the `ACTIVE_*` globals. Full design, including the note-template token language custom equations use
-instead of a JS function: `docs/EDITOR.md`.
+`TEMPLATES`/`COLORS`/`SCORING_DEFAULT` (below) are the built-in defaults and stay exactly as authored —
+`tools/validate.js` checks them and only them. What the game actually plays is `ACTIVE_TEMPLATES` /
+`ACTIVE_COLORS` / `ACTIVE_SCORING`, computed by `rebuildActive()` as those defaults with two layers on top,
+each via `mergeLayer()`: first `published` (fetched from `custom-content.json`, shared with every computer),
+then `custom` (this browser's own `localStorage`, editable via the **Редактор на съдържание** screen). Every
+runtime function reads the `ACTIVE_*` globals. Full design, including the note-template token language custom
+equations use instead of a JS function, and how to publish edits: `docs/EDITOR.md`.
 
 ## Equation templates
 
@@ -41,7 +49,7 @@ Rules:
   `N_HAL`, `N_HALIDE`, `N_HACID`, `AG_COLOR`. `U('Na2O')` gives Unicode subscripts for text.
 
 Related helpers: `enumerate(t)` lists every allowed substitution; `instantiate(t, v)` returns a concrete
-equation `{id, lvl, left, right, sol, note, vars}`.
+equation `{id, left, right, sol, note, vars}`.
 
 ## Generator
 

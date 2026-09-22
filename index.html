@@ -177,8 +177,25 @@ ul.wrong{padding-left:18px;margin:6px 0}
 <body>
 <div class="wrap">
 
+  <!-- LOADING -->
+  <section id="loading">
+    <div class="card" style="text-align:center">
+      <p class="muted" style="margin:0">Зарежда…</p>
+    </div>
+  </section>
+
+  <!-- OFFLINE -->
+  <section id="offline" class="hidden">
+    <div class="card" style="text-align:center">
+      <span class="material-icons" aria-hidden="true" style="font-size:4rem;color:var(--muted)">wifi_off</span>
+      <h1 style="margin:14px 0 6px">Няма връзка с интернет</h1>
+      <p class="muted">Играта зарежда съдържанието си при отваряне и не може да продължи без връзка. Провери интернета си и опитай пак.</p>
+      <div class="actions"><button class="primary" id="btnRetry"><span class="material-icons" aria-hidden="true">refresh</span>Опитай пак</button></div>
+    </div>
+  </section>
+
   <!-- START -->
-  <section id="start">
+  <section id="start" class="hidden">
     <div class="card">
       <div class="herohead">
         <span class="material-icons" aria-hidden="true">balance</span>
@@ -279,8 +296,10 @@ ul.wrong{padding-left:18px;margin:6px 0}
     </div>
 
     <div class="card">
-      <h2><span class="material-icons" aria-hidden="true">construction</span>Резервно копие</h2>
-      <p class="muted" style="margin-top:0">Промените се пазят автоматично в този браузър. За да ги пренесеш на друг компютър или да не ги загубиш, изтегли ги като файл.</p>
+      <h2><span class="material-icons" aria-hidden="true">construction</span>Публикуване</h2>
+      <p class="muted" style="margin-top:0">Промените тук се пазят само в този браузър, докато не ги публикуваш. Изтегли файла и го качи в хранилището
+        на играта като <code>custom-content.json</code> — тогава ги вижда всеки, който отвори играта, на всеки компютър.
+        „Качи файл“ зарежда JSON само в този браузър, за преглед преди публикуване. Подробности: <code>docs/EDITOR.md</code>.</p>
       <div class="actions">
         <button id="btnExport"><span class="material-icons" aria-hidden="true">download</span>Изтегли</button>
         <button id="btnImportBtn"><span class="material-icons" aria-hidden="true">upload_file</span>Качи файл</button>
@@ -372,21 +391,29 @@ const TEMPLATES = [
 
 const MAXC = 10;
 
-/* ---------- потребителско съдържание (localStorage) ---------- */
+/* ---------- потребителско съдържание (публикувано + localStorage) ---------- */
 const LS_KEY = 'balans_custom_v1';
+const PUBLISHED_URL = 'custom-content.json';
 const SCORING_DEFAULT = {base:100, mistake:10, hint:25, maxCoef:MAXC};
 function emptyCustom(){ return {templates:[], deletedIds:[], colors:{}, scoring:{}}; }
+// Приема произволен обект (от localStorage, качен файл или fetch) и връща валидна форма на "custom".
+function normalizeCustom(c){
+  if(!c || typeof c!=='object') return emptyCustom();
+  return {templates:Array.isArray(c.templates)?c.templates:[], deletedIds:Array.isArray(c.deletedIds)?c.deletedIds:[],
+    colors:(c.colors&&typeof c.colors==='object')?c.colors:{}, scoring:(c.scoring&&typeof c.scoring==='object')?c.scoring:{}};
+}
 function loadCustom(){
   try{
     const raw=localStorage.getItem(LS_KEY);
-    if(!raw) return emptyCustom();
-    const c=JSON.parse(raw);
-    return {templates:Array.isArray(c.templates)?c.templates:[], deletedIds:Array.isArray(c.deletedIds)?c.deletedIds:[],
-      colors:(c.colors&&typeof c.colors==='object')?c.colors:{}, scoring:(c.scoring&&typeof c.scoring==='object')?c.scoring:{}};
+    return raw?normalizeCustom(JSON.parse(raw)):emptyCustom();
   }catch(e){ return emptyCustom(); }
 }
 let custom = loadCustom();
 function saveCustom(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(custom)); }catch(e){} }
+
+// Публикувано съдържание (custom-content.json в хранилището, за да стигат промените до всеки компютър, а не
+// само до браузъра, в който са направени) — зарежда се по мрежата, виж loadPublished() под състоянието.
+let published = emptyCustom();
 
 // Бележки за потребителски уравнения: прост шаблон с {M}, {Mname}, {Madj}, {X}, {Xname}, {Xhalide} и т.н.
 // (вградените уравнения продължават да ползват function note заради по-богата граматика).
@@ -409,16 +436,22 @@ function toRuntimeTemplate(ct){
     vars:(ct.vars&&Object.keys(ct.vars).length)?ct.vars:undefined, note:v=>renderNoteTemplate(ct.noteTpl,v)};
 }
 
-// Активно съдържание = вградено (TEMPLATES/COLORS/...) + потребителски промени (custom) върху него.
+// Прилага един слой промени (layer: {templates, deletedIds, colors, scoring}) върху базово съдържание.
+function mergeLayer(baseTemplates, baseColors, baseScoring, layer){
+  const overrides={}; layer.templates.forEach(t=>{ overrides[t.id]=t; });
+  const baseIds=new Set(baseTemplates.map(t=>t.id));
+  const kept=baseTemplates.filter(t=>!layer.deletedIds.includes(t.id)).map(t=>overrides[t.id]?toRuntimeTemplate(overrides[t.id]):t);
+  const added=layer.templates.filter(t=>!baseIds.has(t.id)).map(toRuntimeTemplate);
+  return {templates:[...kept,...added], colors:{...baseColors,...layer.colors}, scoring:{...baseScoring,...layer.scoring}};
+}
+
+// Активно съдържание = вградено (TEMPLATES/COLORS/...) + публикувано (published) + локални промени (custom),
+// всеки слой отгоре на предишния. Виж docs/EDITOR.md.
 let ACTIVE_TEMPLATES, ACTIVE_COLORS, ACTIVE_SCORING;
 function rebuildActive(){
-  const overrides={}; custom.templates.forEach(t=>{ overrides[t.id]=t; });
-  const builtinIds=new Set(TEMPLATES.map(t=>t.id));
-  const kept=TEMPLATES.filter(t=>!custom.deletedIds.includes(t.id)).map(t=>overrides[t.id]?toRuntimeTemplate(overrides[t.id]):t);
-  const added=custom.templates.filter(t=>!builtinIds.has(t.id)).map(toRuntimeTemplate);
-  ACTIVE_TEMPLATES=[...kept,...added];
-  ACTIVE_COLORS={...COLORS,...custom.colors};
-  ACTIVE_SCORING={...SCORING_DEFAULT,...custom.scoring};
+  const pub=mergeLayer(TEMPLATES, COLORS, SCORING_DEFAULT, published);
+  const loc=mergeLayer(pub.templates, pub.colors, pub.scoring, custom);
+  ACTIVE_TEMPLATES=loc.templates; ACTIVE_COLORS=loc.colors; ACTIVE_SCORING=loc.scoring;
 }
 rebuildActive();
 
@@ -476,7 +509,7 @@ let EQS = [];
 /* ---------- състояние ---------- */
 let idx, coefs, score, mistakes, hints, solved, wrong, earnedNow;
 
-function show(id){ ['start','game','end','editor'].forEach(s=>$(s).classList.toggle('hidden',s!==id)); window.scrollTo(0,0); }
+function show(id){ ['loading','offline','start','game','end','editor'].forEach(s=>$(s).classList.toggle('hidden',s!==id)); window.scrollTo(0,0); }
 
 let seedBase=(()=>{ const n=parseInt(new URLSearchParams(location.search).get('seed'),10); return Number.isFinite(n)?n:null; })();
 let gameNo=0;
@@ -897,9 +930,7 @@ function importCustomFile(file){
   const reader=new FileReader();
   reader.onload=()=>{
     try{
-      const c=JSON.parse(reader.result);
-      custom={templates:Array.isArray(c.templates)?c.templates:[], deletedIds:Array.isArray(c.deletedIds)?c.deletedIds:[],
-        colors:(c.colors&&typeof c.colors==='object')?c.colors:{}, scoring:(c.scoring&&typeof c.scoring==='object')?c.scoring:{}};
+      custom=normalizeCustom(JSON.parse(reader.result));
       saveCustom(); rebuildActive(); renderEditor(); renderScoringText();
       alert('Файлът е зареден.');
     }catch(e){ alert('Файлът не изглежда валиден.'); }
@@ -931,10 +962,27 @@ $('btnImport').onchange=e=>{ if(e.target.files[0]) importCustomFile(e.target.fil
 $('btnResetCustom').onclick=resetCustom;
 $('eq').addEventListener('scroll', updateEqFade, {passive:true});
 window.addEventListener('resize', updateEqFade);
-renderScoringText();
+$('btnRetry').onclick=()=>location.reload();
 
-// Редакторът няма линк от началния екран — отваря се само с index.html?editor=1
-if(new URLSearchParams(location.search).get('editor')){ renderEditor(); show('editor'); }
+// Съдържанието се публикува чрез custom-content.json в хранилището (виж docs/EDITOR.md), затова играта
+// зарежда по мрежата дори при отваряне като локален файл: без връзка показваме #offline вместо играта.
+// 404 не е грешка — просто значи, че още нищо не е публикувано, и играем само с вградените уравнения.
+async function loadPublished(){
+  const res=await fetch(PUBLISHED_URL,{cache:'no-store'});
+  if(!res.ok){ published=emptyCustom(); return; }
+  try{ published=normalizeCustom(await res.json()); }
+  catch(e){ published=emptyCustom(); }   // невалиден JSON е проблем със съдържанието, не с връзката
+}
+async function init(){
+  try{
+    await loadPublished();
+    rebuildActive();
+    renderScoringText();
+    const editorRequested=new URLSearchParams(location.search).get('editor');
+    if(editorRequested){ renderEditor(); show('editor'); } else { show('start'); }
+  }catch(e){ show('offline'); }
+}
+init();
 </script>
 </body>
 </html>
