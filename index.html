@@ -134,16 +134,10 @@ ul.wrong{padding-left:18px;margin:6px 0}
 .herohead{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .herohead .material-icons{font-size:2.2rem;color:var(--accent);background:var(--ok-bg);border-radius:14px;padding:10px;flex:0 0 auto}
 .herohead h1{margin:0}
-.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
-.stat{display:flex;flex-direction:column;gap:2px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-.stat .material-icons{color:var(--accent);font-size:1.3em}
-.stat b{font-size:1.35rem;line-height:1.2}
-.stat span{color:var(--muted);font-size:.82rem;font-weight:600}
-.rulenote{display:flex;align-items:center;gap:8px;font-size:.85rem;margin:2px 0 0}
-.rulenote .material-icons{color:var(--accent);font-size:1.1em}
 .divider{border:none;border-top:1px solid var(--line);margin:16px 0}
-.controlhelp{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.controlhelp{display:flex;flex-direction:column;gap:10px;margin:14px 0}
 .controlhelprow{display:flex;align-items:center;gap:10px;font-size:.92rem}
+.controlhelprow .material-icons{width:40px;flex:0 0 auto;text-align:center;color:var(--accent);font-size:1.3em}
 .ctrlsample{width:40px;min-height:36px;padding:0;font-size:1.15rem;font-weight:700;line-height:1;pointer-events:none;flex:0 0 auto}
 .gradeicon{margin:4px 0}
 .gradeicon .material-icons{font-size:2.6rem}
@@ -200,13 +194,10 @@ ul.wrong{padding-left:18px;margin:6px 0}
       <div class="controlhelp">
         <div class="controlhelprow"><button type="button" class="ctrlsample" tabindex="-1" aria-hidden="true">+</button><span>Увеличава коефициента пред формулата.</span></div>
         <div class="controlhelprow"><button type="button" class="ctrlsample" tabindex="-1" aria-hidden="true">−</button><span>Намалява коефициента пред формулата.</span></div>
-      </div>
-      <p class="muted rulenote"><span class="material-icons" aria-hidden="true">calculate</span>Коефициентите трябва да са най-малките възможни цели числа.</p>
-      <div class="statgrid">
-        <div class="stat"><span class="material-icons" aria-hidden="true">list_alt</span><b id="statTotal">12</b><span>уравнения</span></div>
-        <div class="stat"><span class="material-icons" aria-hidden="true">star</span><b id="statMax">100</b><span>макс. точки за уравнение</span></div>
-        <div class="stat"><span class="material-icons" aria-hidden="true">remove_circle</span><b id="statMistake">−10</b><span>за грешна проверка</span></div>
-        <div class="stat"><span class="material-icons" aria-hidden="true">lightbulb</span><b id="statHint">−25</b><span>за подсказка</span></div>
+        <div class="controlhelprow"><span class="material-icons" aria-hidden="true">calculate</span><span>Коефициентите трябва да са най-малките възможни цели числа.</span></div>
+        <div class="controlhelprow"><span class="material-icons" aria-hidden="true">star</span><span>До <b id="statMax">100</b> точки за уравнение.</span></div>
+        <div class="controlhelprow"><span class="material-icons" aria-hidden="true">remove_circle</span><span><b id="statMistake">−10</b> точки за грешна проверка.</span></div>
+        <div class="controlhelprow"><span class="material-icons" aria-hidden="true">lightbulb</span><span><b id="statHint">−25</b> точки за подсказка.</span></div>
       </div>
       <div class="actions"><button class="primary" id="btnStart"><span class="material-icons" aria-hidden="true">play_arrow</span>Започни</button></div>
       <div style="text-align:center;margin-top:10px">
@@ -665,7 +656,6 @@ function finish(){
 /* ---------- редактор на съдържание ---------- */
 function renderScoringText(){
   const s=ACTIVE_SCORING;
-  $('statTotal').textContent=GAME_LENGTH;
   $('statMax').textContent=s.base;
   $('statMistake').textContent='−'+s.mistake;
   $('statHint').textContent='−'+s.hint;
