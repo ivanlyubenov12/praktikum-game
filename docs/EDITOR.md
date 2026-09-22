@@ -96,12 +96,17 @@ shows up on the very next load. Never add it to `sw.js`'s `SHELL` array.
 network response, not merely "whatever the editor's own UI already allowed" (someone could hand-edit or
 otherwise corrupt that file before it's committed). Two consequences:
 
-- **Every formula, note, element symbol and colour that could come from `custom`/`published` is escaped**
-  before it reaches `innerHTML` or an HTML attribute — `escHtml()` for text/attributes, `safeColor()` for
-  colour values used in `style="background:...":`. Without this, a `custom-content.json` with a formula like
-  `Na<img src=x onerror=...>` would run arbitrary JS for every player who loads the game, not just whoever
-  authored it. See `render()`, `renderCounter()`, `renderEqList()`, `renderColorsForm()`, `check()`,
-  `validateForm()` in `index.html`, and the matching ground rule in `CLAUDE.md`.
+- **Every formula, note, element symbol, colour and template id that could come from `custom`/`published` is
+  escaped** before it reaches `innerHTML` or an HTML attribute — `escHtml()` for text/attributes, `safeColor()`
+  for colour values used in `style="background:...":`. Without this, a `custom-content.json` with a formula
+  like `Na<img src=x onerror=...>` would run arbitrary JS for every player who loads the game, not just
+  whoever authored it. See `render()`, `renderCounter()`, `renderEqList()`, `renderColorsForm()`,
+  `renderScoringForm()`, `renderEqForm()`, `check()`, `hint()`, `validateForm()` in `index.html`, and the
+  matching ground rule in `CLAUDE.md`. `toRuntimeTemplate()` additionally coerces `sol` to real numbers
+  (`Number(n)||0`) as a second, independent layer: `hint()` copies `e.sol[i]` straight into `coefs[i]` with no
+  arithmetic in between (unlike the +/− buttons, which do), so without this coercion a non-numeric `sol` value
+  could carry all the way into `coefs[]` and other logic (`isSimplest()`'s `gcd`) that assumes real numbers,
+  not just into a display `escHtml()` already covers.
 - **The GitHub PAT lives only in `localStorage`**, never in the page source, a commit, or
   `custom-content.json` itself, and is sent only to `api.github.com`. Scoping it to just this repo with
   `Contents: Read and write` when you generate it (see **Publishing** above) means a leaked token can't do

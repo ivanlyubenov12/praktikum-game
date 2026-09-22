@@ -44,12 +44,16 @@ halogens. Read `README.md` first, then the relevant file in `docs/`.
   template pool — there is no grouping, ordering, or per-group minimum. Don't reintroduce a `lvl` field on
   templates.
 - **Every string that can originate from `custom`/`published` (a formula, a note, an element symbol, a
-  colour) must go through `escHtml()` before it lands in `innerHTML` or an HTML attribute**, and every colour
-  value through `safeColor()` before a `style="background:...":` — `published` is fetched from the network, so
-  it's untrusted the same way any external input is, not just "whatever the local editor's own validation
-  already allowed." A crafted `custom-content.json` is a realistic attacker who never touches the editor UI at
-  all. New rendering code that displays a formula/note/element/colour must follow the pattern already used in
-  `render()`, `renderCounter()`, `renderEqList()`, `renderColorsForm()`, `check()`, `validateForm()`.
+  colour, an id) must go through `escHtml()` before it lands in `innerHTML` or an HTML attribute**, and every
+  colour value through `safeColor()` before a `style="background:...":` — `published` is fetched from the
+  network, so it's untrusted the same way any external input is, not just "whatever the local editor's own
+  validation already allowed." A crafted `custom-content.json` is a realistic attacker who never touches the
+  editor UI at all. New rendering code that displays a formula/note/element/colour/id must follow the pattern
+  already used in `render()`, `renderCounter()`, `renderEqList()`, `renderColorsForm()`, `renderScoringForm()`,
+  `renderEqForm()`, `check()`, `hint()`, `validateForm()`. **`toRuntimeTemplate()` also coerces `sol` through
+  `Number(n)||0`** — the same reason: an untrusted `sol` array can otherwise carry a non-numeric string all
+  the way into `coefs[]` via `hint()`'s `coefs[i]=e.sol[i]` (which, unlike the +/− buttons, does no arithmetic
+  that would force numeric coercion on its own), and from there into `render()`'s `.coef` display.
 - **The editor's "Публикувай в GitHub" button (`doGhPublish()`) stores a GitHub PAT in `localStorage`
   (`GH_TOKEN_KEY`) and calls the GitHub Contents API directly from the browser.** Never log, display more than
   the last 4 characters of, or send that token anywhere except `api.github.com`. Never bake a token into

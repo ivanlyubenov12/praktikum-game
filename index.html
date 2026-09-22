@@ -434,7 +434,10 @@ function renderNoteTemplate(tpl, v){
   });
 }
 function toRuntimeTemplate(ct){
-  return {id:ct.id, left:ct.left.slice(), right:ct.right.slice(), sol:ct.sol.slice(),
+  // sol минава през Number(): custom/published идва отвън (localStorage, качен файл или мрежата) и не е
+  // гарантирано да съдържа истински числа — без това, полета надолу по веригата (hint(), render()) биха
+  // показали суров низ от sol необезопасен, вместо коефициент.
+  return {id:ct.id, left:ct.left.slice(), right:ct.right.slice(), sol:ct.sol.map(n=>Number(n)||0),
     vars:(ct.vars&&Object.keys(ct.vars).length)?ct.vars:undefined, note:v=>renderNoteTemplate(ct.noteTpl,v)};
 }
 
@@ -565,7 +568,7 @@ function render(){
     html+=`<div class="term">
       <div class="ctrl">
         <button data-i="${i}" data-d="1" aria-label="Увеличи коефициента на ${escHtml(f)}" ${solved?'disabled':''}>+</button>
-        <div class="coef" aria-live="polite">${coefs[i]}</div>
+        <div class="coef" aria-live="polite">${escHtml(coefs[i])}</div>
         <button data-i="${i}" data-d="-1" aria-label="Намали коефициента на ${escHtml(f)}" ${solved?'disabled':''}>−</button>
       </div>
       <div class="formula">${pretty(f)}</div>
@@ -632,7 +635,7 @@ function check(){
   if(!isBalanced()){
     mistakes++;
     updateScore();
-    fb.innerHTML=`<div class="msg bad"><span class="material-icons" aria-hidden="true">cancel</span><span>Не е изравнено. Сивите редове показват елементи, за които още не си избрал коефициент; червените – къде броят атоми е различен. (−${s.mistake} от точките за това уравнение)</span></div>`;
+    fb.innerHTML=`<div class="msg bad"><span class="material-icons" aria-hidden="true">cancel</span><span>Не е изравнено. Сивите редове показват елементи, за които още не си избрал коефициент; червените – къде броят атоми е различен. (−${escHtml(s.mistake)} от точките за това уравнение)</span></div>`;
     $('eq').classList.remove('shake'); void $('eq').offsetWidth; $('eq').classList.add('shake');
     return;
   }
@@ -663,7 +666,7 @@ function hint(){
   coefs[i]=e.sol[i];
   hints++;
   updateScore();
-  $('feedback').innerHTML=`<div class="msg warn"><span class="material-icons" aria-hidden="true">lightbulb</span><span>Подсказка: коефициентът пред ${pretty(([...e.left,...e.right])[i])} е ${e.sol[i]}. (−${ACTIVE_SCORING.hint} от точките за това уравнение)</span></div>`;
+  $('feedback').innerHTML=`<div class="msg warn"><span class="material-icons" aria-hidden="true">lightbulb</span><span>Подсказка: коефициентът пред ${pretty(([...e.left,...e.right])[i])} е ${escHtml(e.sol[i])}. (−${escHtml(ACTIVE_SCORING.hint)} от точките за това уравнение)</span></div>`;
   render();
 }
 
@@ -775,7 +778,7 @@ function renderEqForm(){
   const s=eqFormState;
   const termRows=(list,side)=>list.map((t,i)=>`
     <div class="termRow">
-      <input type="number" min="1" max="${ACTIVE_SCORING.maxCoef}" value="${t.coef}" data-side="${side}" data-i="${i}" data-f="coef" aria-label="Коефициент">
+      <input type="number" min="1" max="${escHtml(ACTIVE_SCORING.maxCoef)}" value="${escHtml(t.coef)}" data-side="${side}" data-i="${i}" data-f="coef" aria-label="Коефициент">
       <input type="text" value="${escHtml(t.formula)}" placeholder="напр. Na2O или {M}2O" data-side="${side}" data-i="${i}" data-f="formula" aria-label="Формула">
       <button type="button" class="iconbtn danger" data-side="${side}" data-i="${i}" data-act="removeTerm" aria-label="Премахни вещество"><span class="material-icons" aria-hidden="true">delete</span></button>
     </div>`).join('');
@@ -873,8 +876,8 @@ function renderEqList(){
     }catch(e){ preview=t.id; }
     return `<div class="eqlistrow">
       <span class="eqtext">${escHtml(preview)}</span>
-      <button type="button" class="iconbtn" data-act="edit" data-id="${t.id}" ${complex?'disabled title="Сложен шаблон – редактирай в кода"':''} aria-label="Редактирай"><span class="material-icons" aria-hidden="true">edit</span></button>
-      <button type="button" class="iconbtn danger" data-act="del" data-id="${t.id}" aria-label="Изтрий"><span class="material-icons" aria-hidden="true">delete</span></button>
+      <button type="button" class="iconbtn" data-act="edit" data-id="${escHtml(t.id)}" ${complex?'disabled title="Сложен шаблон – редактирай в кода"':''} aria-label="Редактирай"><span class="material-icons" aria-hidden="true">edit</span></button>
+      <button type="button" class="iconbtn danger" data-act="del" data-id="${escHtml(t.id)}" aria-label="Изтрий"><span class="material-icons" aria-hidden="true">delete</span></button>
     </div>`;
   }).join('');
   $('eqList').innerHTML=rows||'<p class="muted">Няма уравнения.</p>';
@@ -886,10 +889,10 @@ function renderScoringForm(){
   const s=ACTIVE_SCORING;
   $('scoringForm').innerHTML=`
     <div class="row2">
-      <div class="field"><label>Точки за уравнение</label><input type="number" id="scBase" min="1" value="${s.base}"></div>
-      <div class="field"><label>Наказание за грешка</label><input type="number" id="scMistake" min="0" value="${s.mistake}"></div>
-      <div class="field"><label>Наказание за подсказка</label><input type="number" id="scHint" min="0" value="${s.hint}"></div>
-      <div class="field"><label>Максимален коефициент</label><input type="number" id="scMax" min="2" value="${s.maxCoef}"></div>
+      <div class="field"><label>Точки за уравнение</label><input type="number" id="scBase" min="1" value="${escHtml(s.base)}"></div>
+      <div class="field"><label>Наказание за грешка</label><input type="number" id="scMistake" min="0" value="${escHtml(s.mistake)}"></div>
+      <div class="field"><label>Наказание за подсказка</label><input type="number" id="scHint" min="0" value="${escHtml(s.hint)}"></div>
+      <div class="field"><label>Максимален коефициент</label><input type="number" id="scMax" min="2" value="${escHtml(s.maxCoef)}"></div>
     </div>`;
   const save=()=>{
     custom.scoring={
