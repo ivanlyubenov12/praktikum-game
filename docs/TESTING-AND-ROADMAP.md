@@ -47,8 +47,9 @@ Gameplay
 - [ ] End screen: score, grade icon and progress bar, list of equations with mistakes or hints, *Играй отново* resets everything.
 
 Content editor (see `docs/EDITOR.md`)
-- [ ] Open the editor from the start screen. Change "Точки за уравнение" to e.g. 50, tab away: the start
-  screen's rule text and the *Подсказка* button label update to match immediately.
+- [ ] Open `index.html?editor=1` (there is no link to it from the start screen). Change "Точки за уравнение" to
+  e.g. 50, tab away, press *Назад*: the start screen's "Как се играе" list and the *Подсказка* button label
+  update to match immediately.
 - [ ] Add a new equation (e.g. `2Mg + O₂ → 2MgO`, no `{M}`/`{X}`): Save is disabled until it balances with
   smallest coefficients; the validation box explains why. Once saved, it appears in the equation list and can
   be played (jump to it, or just keep playing seeds until it turns up).

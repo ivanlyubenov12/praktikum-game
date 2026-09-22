@@ -147,7 +147,6 @@ ul.wrong{padding-left:18px;margin:6px 0}
 .chip{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:8px;vertical-align:-2px;border:1px solid var(--dot-stroke)}
 
 /* editor */
-.linklike{background:none;border:none;color:var(--muted);text-decoration:underline;min-height:auto;padding:4px;font-size:.85rem}
 .topbar2{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px}
 .field{margin-bottom:12px}
 .field label{display:block;font-weight:700;font-size:.9rem;margin-bottom:4px}
@@ -200,9 +199,6 @@ ul.wrong{padding-left:18px;margin:6px 0}
         <div class="controlhelprow"><span class="material-icons" aria-hidden="true">lightbulb</span><span><b id="statHint">−25</b> точки за подсказка.</span></div>
       </div>
       <div class="actions"><button class="primary" id="btnStart"><span class="material-icons" aria-hidden="true">play_arrow</span>Започни</button></div>
-      <div style="text-align:center;margin-top:10px">
-        <button class="linklike" id="btnEditor"><span class="material-icons" aria-hidden="true" style="font-size:1em">tune</span>Редактор на съдържание</button>
-      </div>
       <p class="muted" style="text-align:center;font-size:.8rem;margin:14px 0 0">Отбор „Минералните титани“</p>
     </div>
   </section>
@@ -927,7 +923,6 @@ $('btnAgain').onclick=startGame;
 $('btnCheck').onclick=check;
 $('btnHint').onclick=hint;
 $('btnNext').onclick=next;
-$('btnEditor').onclick=()=>{ renderEditor(); show('editor'); };
 $('btnEditorBack').onclick=()=>show('start');
 $('btnAddEq').onclick=()=>openEqForm(null);
 $('btnExport').onclick=exportCustom;
@@ -937,6 +932,9 @@ $('btnResetCustom').onclick=resetCustom;
 $('eq').addEventListener('scroll', updateEqFade, {passive:true});
 window.addEventListener('resize', updateEqFade);
 renderScoringText();
+
+// Редакторът няма линк от началния екран — отваря се само с index.html?editor=1
+if(new URLSearchParams(location.search).get('editor')){ renderEditor(); show('editor'); }
 </script>
 </body>
 </html>

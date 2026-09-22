@@ -1,8 +1,10 @@
 # Content editor
 
-A screen inside `index.html` (open **Редактор на съдържание** from the start screen) that lets a player or
-teacher change every piece of game content without touching code: scoring, element colours, and the
-equations themselves (add, edit, delete — built-in ones included).
+A screen inside `index.html` that lets a player or teacher change every piece of game content without touching
+code: scoring, element colours, and the equations themselves (add, edit, delete — built-in ones included).
+There is no link to it from the start screen (so players don't stumble into it) — open it directly with
+`index.html?editor=1`. `show('editor')` is triggered by that URL param at page load, and **Назад** returns to
+the normal start screen.
 
 ## Why this design
 

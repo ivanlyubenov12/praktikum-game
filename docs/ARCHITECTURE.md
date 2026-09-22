@@ -4,7 +4,9 @@ One file, `index.html`. No modules. Everything is global inside a single `<scrip
 
 ## Screens
 
-`show(id)` toggles the `hidden` class on `#start`, `#game`, `#end`, `#editor`.
+`show(id)` toggles the `hidden` class on `#start`, `#game`, `#end`, `#editor`. `#start` is visible by default;
+the only way to `show('editor')` on load is the `?editor=1` URL param (checked at the bottom of the script) —
+there is no link to it from `#start`, see `docs/EDITOR.md`.
 
 ## Custom content layer
 

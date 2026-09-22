@@ -8,9 +8,9 @@ shows atom counts left vs right as you adjust coefficients.
 **Every game is different.** Equations come from templates, and the alkali metal (Li, Na, K, Rb, Cs) and the
 halogen (F, Cl, Br, I) are chosen at random. 12 equations per game, drawn at random from the whole pool.
 
-**All of it is editable in the app itself.** Open **Редактор на съдържание** from the start screen to add,
-edit or delete equations (built-in ones included), change scoring, or recolour elements — no code editing
-needed. See `docs/EDITOR.md`.
+**All of it is editable in the app itself.** Open `index.html?editor=1` (there's no link to it from the start
+screen, so players don't stumble into it) to add, edit or delete equations (built-in ones included), change
+scoring, or recolour elements — no code editing needed. See `docs/EDITOR.md`.
 
 Built as a school project (NOIT 2025/2026, task 2: a computer game for revision of a chemistry topic).
 
