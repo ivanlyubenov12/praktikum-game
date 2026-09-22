@@ -26,7 +26,7 @@ No build step, no install.
 
 **Repeatable game (for demos and tests):** add `?seed=123` to the address, e.g. `index.html?seed=123`.
 The same seed always gives the same 12 equations. Pressing "play again" uses seed+1. Without `?seed=`, each game
-gets a random seed, and the end screen shows it.
+gets a random seed.
 
 ## How to play
 

@@ -32,7 +32,7 @@ Gameplay
   unequal) since the other terms are still 0.
 - [ ] Reach 4, 1, 2: table all green.
 - [ ] Press − on a coefficient already at 0: stays at 0 (no negative numbers).
-- [ ] Open `index.html?seed=42` again: same 12 equations. Play again from the end screen: different equations, seed shown.
+- [ ] Open `index.html?seed=42` again: same 12 equations. Play again from the end screen: different equations.
 - [ ] Open the page twice without a seed: different sets.
 - [ ] *Провери* with wrong coefficients: red message, shake, potential points drop by 10.
 - [ ] Set 4, 2, 4 for H₂ + O₂ → H₂O: message says balanced but not smallest numbers, no penalty.

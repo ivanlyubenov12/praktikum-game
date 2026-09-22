@@ -54,7 +54,7 @@ If the player has deleted templates through the editor so the pool is smaller th
 simply generates fewer equations — this doesn't crash, but isn't checked or prevented either.
 
 `startGame()` calls `generateSet(nextSeed())`. Seed comes from `?seed=N` in the URL (then N, N+1, … for each new
-game) or `Math.random()`. The end screen prints the seed.
+game) or `Math.random()`. The seed isn't shown anywhere in the UI; it only exists to make `?seed=N` reproducible.
 
 ## Formula parsing
 
@@ -65,7 +65,7 @@ equation for the end screen.
 
 ## State
 
-Globals: `let EQS, idx, coefs, score, mistakes, hints, solved, wrong, currentSeed, gameNo`.
+Globals: `let EQS, idx, coefs, score, mistakes, hints, solved, wrong, gameNo`.
 
 | Variable | Meaning |
 |---|---|

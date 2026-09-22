@@ -6,22 +6,22 @@
 <title>Баланс – игра с химични уравнения</title>
 <style>
 :root{
-  --bg:#f3f6f4; --card:#ffffff; --ink:#15231d; --muted:#5d6f66; --line:#d5ded9;
-  --accent:#0f766e; --accent-ink:#ffffff; --ok:#15803d; --ok-bg:#dcf5e4; --bad:#b91c1c; --bad-bg:#fde3e3; --warn-bg:#fff1cf;
+  --bg:#f5f5f7; --card:#ffffff; --ink:#15231d; --muted:#5d6f66; --line:#d5ded9;
+  --accent:#5246ff; --accent-ink:#ffffff; --accent-bg:#ecebff; --ok:#15803d; --ok-bg:#dcf5e4; --bad:#b91c1c; --bad-bg:#fde3e3; --warn-bg:#fff1cf;
   --dot-stroke:rgba(0,0,0,.25);
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#0e1714; --card:#16231f; --ink:#e6f0eb; --muted:#94a9a0; --line:#2a3d36;
-    --accent:#2dd4bf; --accent-ink:#04211d; --ok:#4ade80; --ok-bg:#12341f; --bad:#f87171; --bad-bg:#3b1717; --warn-bg:#3a2f10;
+    --bg:#2e2e36; --card:#16231f; --ink:#e6f0eb; --muted:#94a9a0; --line:#2a3d36;
+    --accent:#5246ff; --accent-ink:#ffffff; --accent-bg:#262247; --ok:#4ade80; --ok-bg:#12341f; --bad:#f87171; --bad-bg:#3b1717; --warn-bg:#3a2f10;
     --dot-stroke:rgba(255,255,255,.3);
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0e1714; --card:#16231f; --ink:#e6f0eb; --muted:#94a9a0; --line:#2a3d36;
-  --accent:#2dd4bf; --accent-ink:#04211d; --ok:#4ade80; --ok-bg:#12341f; --bad:#f87171; --bad-bg:#3b1717; --warn-bg:#3a2f10;
+  --bg:#2e2e36; --card:#16231f; --ink:#e6f0eb; --muted:#94a9a0; --line:#2a3d36;
+  --accent:#5246ff; --accent-ink:#ffffff; --accent-bg:#262247; --ok:#4ade80; --ok-bg:#12341f; --bad:#f87171; --bad-bg:#3b1717; --warn-bg:#3a2f10;
   --dot-stroke:rgba(255,255,255,.3);
 }
 @font-face{
@@ -132,7 +132,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .big{font-size:3rem;font-weight:800;color:var(--accent);line-height:1}
 ul.wrong{padding-left:18px;margin:6px 0}
 .herohead{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.herohead .material-icons{font-size:2.2rem;color:var(--accent);background:var(--ok-bg);border-radius:14px;padding:10px;flex:0 0 auto}
+.herohead .material-icons{font-size:2.2rem;color:var(--accent);background:var(--accent-bg);border-radius:14px;padding:10px;flex:0 0 auto}
 .herohead h1{margin:0}
 .divider{border:none;border-top:1px solid var(--line);margin:16px 0}
 .controlhelp{display:flex;flex-direction:column;gap:10px;margin:14px 0}
@@ -195,7 +195,7 @@ ul.wrong{padding-left:18px;margin:6px 0}
         <div class="controlhelprow"><button type="button" class="ctrlsample" tabindex="-1" aria-hidden="true">+</button><span>Увеличава коефициента пред формулата.</span></div>
         <div class="controlhelprow"><button type="button" class="ctrlsample" tabindex="-1" aria-hidden="true">−</button><span>Намалява коефициента пред формулата.</span></div>
         <div class="controlhelprow"><span class="material-icons" aria-hidden="true">calculate</span><span>Коефициентите трябва да са най-малките възможни цели числа.</span></div>
-        <div class="controlhelprow"><span class="material-icons" aria-hidden="true">star</span><span>До <b id="statMax">100</b> точки за уравнение.</span></div>
+        <div class="controlhelprow"><span class="material-icons" aria-hidden="true">star</span><span>Най-много <b id="statMax">100</b> точки за уравнение.</span></div>
         <div class="controlhelprow"><span class="material-icons" aria-hidden="true">remove_circle</span><span><b id="statMistake">−10</b> точки за грешна проверка.</span></div>
         <div class="controlhelprow"><span class="material-icons" aria-hidden="true">lightbulb</span><span><b id="statHint">−25</b> точки за подсказка.</span></div>
       </div>
@@ -203,6 +203,7 @@ ul.wrong{padding-left:18px;margin:6px 0}
       <div style="text-align:center;margin-top:10px">
         <button class="linklike" id="btnEditor"><span class="material-icons" aria-hidden="true" style="font-size:1em">tune</span>Редактор на съдържание</button>
       </div>
+      <p class="muted" style="text-align:center;font-size:.8rem;margin:14px 0 0">Отбор „Минералните титани“</p>
     </div>
   </section>
 
@@ -245,7 +246,6 @@ ul.wrong{padding-left:18px;margin:6px 0}
       <p class="muted" id="finalMax"></p>
       <div class="bar" style="margin:10px 0 0"><i id="finalBar"></i></div>
       <p id="grade" style="font-weight:700;font-size:1.1rem"></p>
-      <p class="muted" id="seedLbl" style="font-size:.85rem"></p>
     </div>
     <div class="card" id="wrongCard">
       <h2><span class="material-icons" aria-hidden="true">history</span>Уравнения, при които сгреши или ползва подсказка</h2>
@@ -483,11 +483,11 @@ let idx, coefs, score, mistakes, hints, solved, wrong, earnedNow;
 function show(id){ ['start','game','end','editor'].forEach(s=>$(s).classList.toggle('hidden',s!==id)); window.scrollTo(0,0); }
 
 let seedBase=(()=>{ const n=parseInt(new URLSearchParams(location.search).get('seed'),10); return Number.isFinite(n)?n:null; })();
-let gameNo=0, currentSeed=0;
+let gameNo=0;
 function nextSeed(){ const sd = seedBase!==null ? seedBase+gameNo : Math.floor(Math.random()*1e6); gameNo++; return sd; }
 
 function startGame(){
-  currentSeed=nextSeed(); EQS=generateSet(currentSeed);
+  EQS=generateSet(nextSeed());
   idx=0; score=0; wrong=[];
   show('game'); loadEq();
 }
@@ -649,7 +649,6 @@ function finish(){
   const wl=$('wrongList'); wl.innerHTML='';
   $('wrongCard').classList.toggle('hidden',wrong.length===0);
   wrong.forEach(t=>{const li=document.createElement('li');li.textContent=t;wl.appendChild(li);});
-  $('seedLbl').textContent='Вариант #'+currentSeed+' (добави ?seed='+currentSeed+' към адреса, за да повториш същите уравнения)';
   show('end');
 }
 
