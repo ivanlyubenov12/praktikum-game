@@ -146,8 +146,11 @@ editor's own already-validated form fields. See **Security** in `docs/EDITOR.md`
 `render()` also calls `updateEqFade()`, which toggles `scroll-left`/`scroll-right` classes on `#eqScroll`
 (the wrapper around `#eq`) based on `#eq`'s `scrollLeft`/`scrollWidth`/`clientWidth`. Those classes drive a
 CSS gradient that fades the overflowing edge(s) into the card background, so a scrollable equation row is
-visibly cut off instead of just ending. `#eq`'s own `scroll` listener and a `window` `resize` listener (wired
-once, at the bottom of the script) keep it in sync as the player scrolls or rotates the device.
+visibly cut off instead of just ending. This is kept in sync by `requestAnimationFrame`, not a `scroll`
+listener — an earlier version used `#eq.addEventListener('scroll', ...)` plus a `resize` listener, but touch
+scroll events aren't reliably frequent on mobile (the left fade could fail to appear while swiping); a
+`syncEqFade()` loop (wired once, at the bottom of the script) calls `updateEqFade()` every frame instead,
+which is correct regardless of which events the browser does or doesn't fire.
 
 ## Theming and accessibility
 

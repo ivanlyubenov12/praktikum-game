@@ -1053,9 +1053,12 @@ $('btnExport').onclick=exportCustom;
 $('btnImportBtn').onclick=()=>$('btnImport').click();
 $('btnImport').onchange=e=>{ if(e.target.files[0]) importCustomFile(e.target.files[0]); e.target.value=''; };
 $('btnResetCustom').onclick=resetCustom;
-$('eq').addEventListener('scroll', updateEqFade, {passive:true});
-window.addEventListener('resize', updateEqFade);
 $('btnRetry').onclick=()=>location.reload();
+// Постоянна синхронизация вместо scroll/resize листенъри — на телефон (особено iOS) scroll събитията при
+// докосване не гарантирано „тиктакат“ достатъчно често/надеждно по време на инерционно скролиране, което
+// оставяше левия избледняващ ръб да не се появи. requestAnimationFrame е евтино (две class toggle-а) и винаги
+// вярно, независимо кое събитие (ако изобщо) е стигнало до браузъра.
+(function syncEqFade(){ updateEqFade(); requestAnimationFrame(syncEqFade); })();
 
 // Съдържанието се публикува чрез custom-content.json в хранилището (виж docs/EDITOR.md), затова играта
 // зарежда по мрежата дори при отваряне като локален файл: без връзка показваме #offline вместо играта.

@@ -119,6 +119,10 @@ Appearance and access
   being fully visible is obvious even before you touch it. Only the right edge fades at the start (more
   content to the right), only the left edge fades once fully scrolled, both fade in the middle, and a row
   that fits entirely shows neither.
+- [ ] On a real phone (not just desktop devtools emulation), swipe the equation row with a finger, past
+  halfway: the left fade must appear reliably mid-swipe and once you lift your finger, not just eventually or
+  not at all — this was broken on touch devices when it depended on the `scroll` event, which isn't fired
+  reliably during momentum scrolling; it's synced by `requestAnimationFrame` now instead.
 - [ ] Compare a term with no subscript (e.g. `Na`, `Al`) next to one with a subscript (e.g. `O₂`) in the same
   equation: their letters sit on the same line, and the `+` / `→` between terms lines up with those letters
   too — not higher or lower.
