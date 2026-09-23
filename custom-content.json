@@ -1,6 +1,14 @@
 {
   "templates": [],
-  "deletedIds": [],
+  "deletedIds": [
+    "p-o2",
+    "hgo"
+  ],
   "colors": {},
-  "scoring": {}
+  "scoring": {
+    "base": 100,
+    "mistake": 10,
+    "hint": 25,
+    "maxCoef": 10
+  }
 }
