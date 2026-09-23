@@ -50,7 +50,7 @@ elements when a game starts.
   sol:[2,1,2],                            // coefficients, left then right, smallest whole numbers
   vars:{M:ALK, X:HAL},                    // allowed values per placeholder
   ok: v => ACT[v.X] > ACT[v.Y],           // optional extra constraint on a combination
-  note: v => `Bulgarian explanation using ${N_MET[v.M]} ...` }   // shown after a correct answer
+  note: v => `Bulgarian explanation using ${N_MET[v.M]} ...` }   // authored per template, see below
 ```
 
 Rules:
@@ -60,7 +60,10 @@ Rules:
   (`X:['Cl','Br']` for reactions fluorine and iodine do not do at school level).
 - Fixed reactions (no placeholders, e.g. `H2 + O2 → H2O`) are templates with no `vars`.
 - `note` is a function so it can name the actual metal and halogen. Name tables: `N_MET`, `N_ADJ`, `N_BASE`,
-  `N_HAL`, `N_HALIDE`, `N_HACID`, `AG_COLOR`. `U('Na2O')` gives Unicode subscripts for text.
+  `N_HAL`, `N_HALIDE`, `N_HACID`, `AG_COLOR`. `U('Na2O')` gives Unicode subscripts for text. Every template
+  still defines one and the editor still lets you author/edit it, but the game itself doesn't display it
+  during play (no more "Какво се случва" box after a correct answer) — it's kept as documentation/authoring
+  metadata, not currently rendered.
 
 Related helpers: `enumerate(t)` lists every allowed substitution; `instantiate(t, v)` returns a concrete
 equation `{id, left, right, sol, note, vars}`.
@@ -98,7 +101,7 @@ Globals: `let EQS, idx, coefs, score, mistakes, hints, solved, wrong, gameNo`.
 | `coefs` | Current player coefficients (same order as `sol`), each 0..`ACTIVE_SCORING.maxCoef` (10 by default); every equation starts all-0 |
 | `score` | Total points from solved equations only |
 | `mistakes` / `hints` | Wrong checks / hints used on the current equation |
-| `solved` | Current equation solved (locks +/− buttons) |
+| `solved` | Current equation solved (locks +/− buttons, `render()` adds `.solved` to `#eqCard` — green border) |
 | `wrong` | Equation strings where the player made a mistake or used a hint (end screen) |
 
 ## Flow
@@ -109,7 +112,7 @@ startGame → generateSet → loadEq (scrolls to top) → render (→ renderCoun
    Провери → check():
         not balanced        → mistakes++, message, shake
         balanced, not gcd 1 → warning, no penalty
-        balanced + simplest → solved, score += max(0, ACTIVE_SCORING.base - hints*hintPenalty - mistakes*mistakePenalty), show note
+        balanced + simplest → solved, score += max(0, ACTIVE_SCORING.base - hints*hintPenalty - mistakes*mistakePenalty)
    Подсказка → hint(): set first wrong coefficient to the correct value, hints++;
                         if every coefficient already matches sol (only possible by setting them all by
                         hand — coefs start at 0, sol is never 0), show an "already correct" message
@@ -126,10 +129,13 @@ is only added to `score` when the equation is solved.
 
 ## Rendering
 
-`render()` rebuilds the equation row (buttons + formulas), then `renderCounter()` (atom-count rows, each with a
-colour chip, a proportional bar per side and a badge). A row is grey/"—" (`row-pending`) while both sides sum
-to 0 for that element (nothing entered yet on either side), green/✓ once both sides match, red/✗ otherwise.
-It re-creates DOM on every click; that is fine at this size.
+`render()` toggles `.solved` on `#eqCard` (the card wrapping `#eq`) to match `solved` — a green border/glow
+that's the visual "this equation is locked in" cue (there's no per-equation note text shown anymore, see
+**Equation templates** above). It then rebuilds the equation row (buttons + formulas, `disabled` on the +/−
+buttons while `solved`), then `renderCounter()` (atom-count rows, each with a colour chip, a proportional bar
+per side and a badge). A row is grey/"—" (`row-pending`) while both sides sum to 0 for that element (nothing
+entered yet on either side), green/✓ once both sides match, red/✗ otherwise. It re-creates DOM on every
+click; that is fine at this size.
 
 Every formula, note, element symbol or colour that could originate from `custom`/`published` — i.e. from
 `ACTIVE_TEMPLATES`/`ACTIVE_COLORS` rather than a hardcoded string — goes through `escHtml()` (text and HTML

@@ -53,7 +53,8 @@ Gameplay
 - [ ] *Провери* with wrong coefficients: red message, shake, potential points drop by 10.
 - [ ] Set 4, 2, 4 for H₂ + O₂ → H₂O: message says balanced but not smallest numbers, no penalty.
 - [ ] *Подсказка*: fixes one coefficient (from 0 or from a wrong value), potential drops by 25.
-- [ ] Correct answer: green message, science note, +points, buttons locked, *Напред* appears.
+- [ ] Correct answer: green message, +points, the equation card's border turns green (`#eqCard.solved`),
+  +/− buttons locked (`disabled`), *Напред* appears.
 - [ ] An equation whose solution is all 1s (e.g. `M₂O + CO₂ → M₂CO₃`, `MOH + HX → MX + H₂O`): still starts at
   0/0/0 (grey table, not a free win) — you must press + once per term to reach 1/1/1. If you do that by hand and
   then press *Подсказка* anyway, it shows an "already correct" message instead of doing nothing.
@@ -95,7 +96,7 @@ Content editor (see `docs/EDITOR.md`)
   reopens the entry field; Изчисти токена removes it after a confirm.
 - [ ] Security: add an equation whose formula or note contains `<img src=x onerror=alert(1)>` (or similar).
   It must render as literal text everywhere it shows — the equation row, the editor's equation list, the
-  science note after solving — never as a real `<img>` tag, and no alert/dialog ever fires. Same check for a
+  edit form's note textarea — never as a real `<img>` tag, and no alert/dialog ever fires. Same check for a
   colour value containing a `"` (e.g. via a hand-edited `custom-content.json`, since the colour-picker UI
   itself won't let you type one): must fall back to the default grey chip, not break the page.
 
